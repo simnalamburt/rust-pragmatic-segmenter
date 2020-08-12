@@ -16,6 +16,7 @@ struct Segmenter {
 
     numbered_list_regex_1: Regex,
     numbered_list_regex_2: Regex,
+    numbered_list_parens_regex: Regex,
 }
 
 // TODO: 에러 핸들링 바르게 하기
@@ -83,6 +84,13 @@ impl Segmenter {
             // Example: https://regex101.com/r/cd3yNz/1
             numbered_list_regex_2: Regex::with_options(
                 r"(?<=\s)\d{1,2}\.(?=\s)|^\d{1,2}\.(?=\s)|(?<=\s)\d{1,2}\.(?=\))|^\d{1,2}\.(?=\))|(?<=\s\-)\d{1,2}\.(?=\s)|(?<=^\-)\d{1,2}\.(?=\s)|(?<=\s\⁃)\d{1,2}\.(?=\s)|(?<=^\⁃)\d{1,2}\.(?=\s)|(?<=\s\-)\d{1,2}\.(?=\))|(?<=^\-)\d{1,2}\.(?=\))|(?<=\s\⁃)\d{1,2}\.(?=\))|(?<=^\⁃)\d{1,2}\.(?=\))",
+                RegexOptions::REGEX_OPTION_NONE,
+                Syntax::ruby(),
+            )?,
+
+            // Example: https://regex101.com/r/O8bLbW/1
+            numbered_list_parens_regex: Regex::with_options(
+                r"\d{1,2}(?=\)\s)",
                 RegexOptions::REGEX_OPTION_NONE,
                 Syntax::ruby(),
             )?,
@@ -254,6 +262,47 @@ Dont match below
             .find_iter(text)
             .collect::<Vec<_>>(),
         vec![(13, 15), (22, 24), (34, 36), (44, 46), (50, 52), (59, 61),]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_numbered_list_parens_regex() -> TestResult {
+    let seg = Segmenter::new()?;
+    let text = "\
+1) a
+2) b
+    1) b1
+    2) b2
+3) c
+4) 5)
+55) d
+666) e
+f77) f
+8888) f
+10)nomatch
+-10) ignore sign
+";
+
+    assert_eq!(
+        seg.numbered_list_parens_regex
+            .find_iter(text)
+            .collect::<Vec<_>>(),
+        vec![
+            (0, 1),
+            (5, 6),
+            (14, 15),
+            (24, 25),
+            (30, 31),
+            (35, 36),
+            (38, 39),
+            (41, 43),
+            (48, 50),
+            (55, 57),
+            (63, 65),
+            (81, 83),
+        ]
     );
 
     Ok(())
