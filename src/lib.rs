@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -249,13 +250,13 @@ fn test_replace_alphabet_list_parens() -> TestResult {
 }
 
 impl Segmenter {
-    fn iterate_alphabet_array(
+    fn iterate_alphabet_array<'a>(
         &self,
-        text: &str,
+        text: &'a str,
         regex: &Regex,
         parens: bool,
         use_roman_numeral: bool,
-    ) -> String {
+    ) -> Cow<'a, str> {
         // TODO: 루비 코드(pragmatic segmenter)에선 여기서 검사하기 전에 downcase를 함, pySBD에선
         // 안함. Downcase를 하는것이 맞지만, 이 프로젝트는 일단 pySBD의 동작을 따르겠다.
         //
@@ -275,7 +276,7 @@ impl Segmenter {
         let len = list_array.len();
 
         // TODO: 이하 코드에서 매 루프마다 복사가 발생함, 최적화 가능함
-        let mut result: String = text.to_string();
+        let mut result: Cow<str> = Cow::Borrowed(text);
         for ind in 0..len {
             let is_strange = if len <= 1 {
                 // NOTE: 원본 코드에선 len이 1이면 무조건 스킵하게 만들어져있고, 버그로 생각된다.
@@ -304,11 +305,11 @@ impl Segmenter {
             }
 
             let each = list_array[ind].0;
-            if parens {
-                result = self.replace_alphabet_list_parens(&result, each);
+            result = Cow::Owned(if parens {
+                self.replace_alphabet_list_parens(&result, each)
             } else {
-                result = self.replace_alphabet_list(&result, each);
-            }
+                self.replace_alphabet_list(&result, each)
+            })
         }
 
         result
