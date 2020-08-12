@@ -404,295 +404,138 @@ fn test_iterate_alphabet_array() -> TestResult {
         String::from("i. Hi")
     );
 
-    //
-    // Test large inputs
-    //
-    let text = "\
-List 1
+    assert_eq!(
+        seg.iterate_alphabet_array("\
+Replace
 
-a. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b. Donec interdum lectus sed facilisis accumsan.
-c. Aenean aliquam suscipit elit quis lobortis.
+a. Lorem
+b. Donec
+c. Aenean
 
-A. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B. Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C. Maecenas hendrerit eros nisi.
+Don't
+
+A. Vestibulum
+B. Proin
+C. Maecenas
+", &seg.alphabetical_list_with_periods, false, false),
+        String::from("\
+Replace
+
+\ra∯ Lorem
+\rb∯ Donec
+\rc∯ Aenean
+
+Don't
+
+A. Vestibulum
+B. Proin
+C. Maecenas
+"),
+    );
+
+    assert_eq!(
+        seg.iterate_alphabet_array("\
+Do
+
+a) Lorem
+b) Donec
+c) Aenean
+
+(a) Lorem
+(b) Donec
+(c) Aenean
+
+Don't
+
+A) Vestibulum
+B) Proin
+C) Maecenas
+
+(A) Vestibulum
+(B) Proin
+(C) Maecenas
+", &seg.alphabetical_list_with_parens,  true,  false),
+        String::from("\
+Do
+
+\r\ra) Lorem
+\r\rb) Donec
+\r\rc) Aenean
+
+\r&✂&a) Lorem
+\r&✂&b) Donec
+\r&✂&c) Aenean
+
+Don't
+
+A) Vestibulum
+B) Proin
+C) Maecenas
+
+(A) Vestibulum
+(B) Proin
+(C) Maecenas
+"),
+    );
+
+    let input = "\
+NOP
 
 i. Ut eu volutpat felis.
-ii. Mauris varius felis sed scelerisque auctor.
-iii. Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
+ii. Mauris
+iii. Proin
 
-I. Suspendisse placerat neque non leo aliquam pharetra.
-II. Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III. Nam vestibulum magna id lectus tristique egestas.
-
-List 2
-
-a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b) Donec interdum lectus sed facilisis accumsan.
-c) Aenean aliquam suscipit elit quis lobortis.
-
-A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C) Maecenas hendrerit eros nisi.
-
-i) Ut eu volutpat felis.
-ii) Mauris varius felis sed scelerisque auctor.
-iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I) Suspendisse placerat neque non leo aliquam pharetra.
-II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III) Nam vestibulum magna id lectus tristique egestas.
-
-List 3
-
-(a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-(b) Donec interdum lectus sed facilisis accumsan.
-(c) Aenean aliquam suscipit elit quis lobortis.
-
-(A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-(B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-(C) Maecenas hendrerit eros nisi.
-
-(i) Ut eu volutpat felis.
-(ii) Mauris varius felis sed scelerisque auctor.
-(iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-(I) Suspendisse placerat neque non leo aliquam pharetra.
-(II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-(III) Nam vestibulum magna id lectus tristique egestas.
+I. Suspendisse
+II. Maecenas
+III. Nam
 ";
+    assert_eq!(
+        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, true),
+        String::from(input),
+    );
 
     assert_eq!(
-        seg.iterate_alphabet_array(text, &seg.alphabetical_list_with_periods, false, false),
-        String::from("\
-List 1
-
-\ra∯ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-\rb∯ Donec interdum lectus sed facilisis accumsan.
-\rc∯ Aenean aliquam suscipit elit quis lobortis.
-
-A. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B. Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C. Maecenas hendrerit eros nisi.
-
-i. Ut eu volutpat felis.
-ii. Mauris varius felis sed scelerisque auctor.
-iii. Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I. Suspendisse placerat neque non leo aliquam pharetra.
-II. Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III. Nam vestibulum magna id lectus tristique egestas.
-
-List 2
-
-a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b) Donec interdum lectus sed facilisis accumsan.
-c) Aenean aliquam suscipit elit quis lobortis.
-
-A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C) Maecenas hendrerit eros nisi.
+        seg.iterate_alphabet_array("\
+Do
 
 i) Ut eu volutpat felis.
-ii) Mauris varius felis sed scelerisque auctor.
-iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I) Suspendisse placerat neque non leo aliquam pharetra.
-II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III) Nam vestibulum magna id lectus tristique egestas.
-
-List 3
-
-(a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-(b) Donec interdum lectus sed facilisis accumsan.
-(c) Aenean aliquam suscipit elit quis lobortis.
-
-(A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-(B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-(C) Maecenas hendrerit eros nisi.
+ii) Mauris
+iii) Proin
 
 (i) Ut eu volutpat felis.
-(ii) Mauris varius felis sed scelerisque auctor.
-(iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
+(ii) Mauris
+(iii) Proin
 
-(I) Suspendisse placerat neque non leo aliquam pharetra.
-(II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-(III) Nam vestibulum magna id lectus tristique egestas.
-"),
-    );
-    assert_eq!(
-        seg.iterate_alphabet_array(text, &seg.alphabetical_list_with_parens,  true,  false),
+Don't
+
+I) Suspendisse
+II) Maecenas
+III) Nam
+
+(I) Suspendisse
+(II) Maecenas
+(III) Nam
+", &seg.alphabetical_list_with_parens,  true,  true),
         String::from("\
-List 1
-
-a. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b. Donec interdum lectus sed facilisis accumsan.
-c. Aenean aliquam suscipit elit quis lobortis.
-
-A. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B. Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C. Maecenas hendrerit eros nisi.
-
-i. Ut eu volutpat felis.
-ii. Mauris varius felis sed scelerisque auctor.
-iii. Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I. Suspendisse placerat neque non leo aliquam pharetra.
-II. Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III. Nam vestibulum magna id lectus tristique egestas.
-
-List 2
-
-\r\ra) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-\r\rb) Donec interdum lectus sed facilisis accumsan.
-\r\rc) Aenean aliquam suscipit elit quis lobortis.
-
-A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C) Maecenas hendrerit eros nisi.
-
-i) Ut eu volutpat felis.
-ii) Mauris varius felis sed scelerisque auctor.
-iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I) Suspendisse placerat neque non leo aliquam pharetra.
-II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III) Nam vestibulum magna id lectus tristique egestas.
-
-List 3
-
-\r&✂&a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-\r&✂&b) Donec interdum lectus sed facilisis accumsan.
-\r&✂&c) Aenean aliquam suscipit elit quis lobortis.
-
-(A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-(B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-(C) Maecenas hendrerit eros nisi.
-
-(i) Ut eu volutpat felis.
-(ii) Mauris varius felis sed scelerisque auctor.
-(iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-(I) Suspendisse placerat neque non leo aliquam pharetra.
-(II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-(III) Nam vestibulum magna id lectus tristique egestas.
-"),
-    );
-    assert_eq!(
-        seg.iterate_alphabet_array(text, &seg.alphabetical_list_with_periods, false, true),
-        String::from("\
-List 1
-
-a. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b. Donec interdum lectus sed facilisis accumsan.
-c. Aenean aliquam suscipit elit quis lobortis.
-
-A. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B. Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C. Maecenas hendrerit eros nisi.
-
-i. Ut eu volutpat felis.
-ii. Mauris varius felis sed scelerisque auctor.
-iii. Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I. Suspendisse placerat neque non leo aliquam pharetra.
-II. Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III. Nam vestibulum magna id lectus tristique egestas.
-
-List 2
-
-a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b) Donec interdum lectus sed facilisis accumsan.
-c) Aenean aliquam suscipit elit quis lobortis.
-
-A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C) Maecenas hendrerit eros nisi.
-
-i) Ut eu volutpat felis.
-ii) Mauris varius felis sed scelerisque auctor.
-iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I) Suspendisse placerat neque non leo aliquam pharetra.
-II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III) Nam vestibulum magna id lectus tristique egestas.
-
-List 3
-
-(a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-(b) Donec interdum lectus sed facilisis accumsan.
-(c) Aenean aliquam suscipit elit quis lobortis.
-
-(A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-(B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-(C) Maecenas hendrerit eros nisi.
-
-(i) Ut eu volutpat felis.
-(ii) Mauris varius felis sed scelerisque auctor.
-(iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-(I) Suspendisse placerat neque non leo aliquam pharetra.
-(II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-(III) Nam vestibulum magna id lectus tristique egestas.
-"),
-    );
-    assert_eq!(
-        seg.iterate_alphabet_array(text, &seg.alphabetical_list_with_parens,  true,  true),
-        String::from("\
-List 1
-
-a. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b. Donec interdum lectus sed facilisis accumsan.
-c. Aenean aliquam suscipit elit quis lobortis.
-
-A. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B. Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C. Maecenas hendrerit eros nisi.
-
-i. Ut eu volutpat felis.
-ii. Mauris varius felis sed scelerisque auctor.
-iii. Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I. Suspendisse placerat neque non leo aliquam pharetra.
-II. Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III. Nam vestibulum magna id lectus tristique egestas.
-
-List 2
-
-a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-b) Donec interdum lectus sed facilisis accumsan.
-c) Aenean aliquam suscipit elit quis lobortis.
-
-A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-C) Maecenas hendrerit eros nisi.
+Do
 
 \r\ri) Ut eu volutpat felis.
-\r\rii) Mauris varius felis sed scelerisque auctor.
-\r\riii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
-
-I) Suspendisse placerat neque non leo aliquam pharetra.
-II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-III) Nam vestibulum magna id lectus tristique egestas.
-
-List 3
-
-(a) Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-(b) Donec interdum lectus sed facilisis accumsan.
-(c) Aenean aliquam suscipit elit quis lobortis.
-
-(A) Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse ligula nulla, interdum at gravida tempor, pulvinar at nunc.
-(B) Proin porta, tellus sit amet condimentum scelerisque, orci urna gravida libero, at semper lectus felis a metus.
-(C) Maecenas hendrerit eros nisi.
+\r\rii) Mauris
+\r\riii) Proin
 
 \r&✂&i) Ut eu volutpat felis.
-\r&✂&ii) Mauris varius felis sed scelerisque auctor.
-\r&✂&iii) Proin leo nunc, pretium et rhoncus sed, hendrerit id ipsum.
+\r&✂&ii) Mauris
+\r&✂&iii) Proin
 
-(I) Suspendisse placerat neque non leo aliquam pharetra.
-(II) Maecenas tempor auctor mauris, non ullamcorper dui posuere nec.
-(III) Nam vestibulum magna id lectus tristique egestas.
+Don't
+
+I) Suspendisse
+II) Maecenas
+III) Nam
+
+(I) Suspendisse
+(II) Maecenas
+(III) Nam
 "),
     );
 
