@@ -13,6 +13,9 @@ struct Segmenter {
 
     alphabetical_list_letters_and_periods_regex: Regex,
     extract_alphabetical_list_letters_regex: Regex,
+
+    numbered_list_regex_1: Regex,
+    numbered_list_regex_2: Regex,
 }
 
 // TODO: 에러 핸들링 바르게 하기
@@ -67,6 +70,20 @@ impl Segmenter {
             extract_alphabetical_list_letters_regex: Regex::with_options(
                 r"\([a-z]+(?=\))|(?<=^)[a-z]+(?=\))|(?<=\A)[a-z]+(?=\))|(?<=\s)[a-z]+(?=\))",
                 RegexOptions::REGEX_OPTION_IGNORECASE,
+                Syntax::ruby(),
+            )?,
+
+            // Example: https://regex101.com/r/cd3yNz/2
+            numbered_list_regex_1: Regex::with_options(
+                r"\s\d{1,2}(?=\.\s)|^\d{1,2}(?=\.\s)|\s\d{1,2}(?=\.\))|^\d{1,2}(?=\.\))|(?<=\s\-)\d{1,2}(?=\.\s)|(?<=^\-)\d{1,2}(?=\.\s)|(?<=\s\⁃)\d{1,2}(?=\.\s)|(?<=^\⁃)\d{1,2}(?=\.\s)|(?<=s\-)\d{1,2}(?=\.\))|(?<=^\-)\d{1,2}(?=\.\))|(?<=\s\⁃)\d{1,2}(?=\.\))|(?<=^\⁃)\d{1,2}(?=\.\))",
+                RegexOptions::REGEX_OPTION_NONE,
+                Syntax::ruby(),
+            )?,
+
+            // Example: https://regex101.com/r/cd3yNz/1
+            numbered_list_regex_2: Regex::with_options(
+                r"(?<=\s)\d{1,2}\.(?=\s)|^\d{1,2}\.(?=\s)|(?<=\s)\d{1,2}\.(?=\))|^\d{1,2}\.(?=\))|(?<=\s\-)\d{1,2}\.(?=\s)|(?<=^\-)\d{1,2}\.(?=\s)|(?<=\s\⁃)\d{1,2}\.(?=\s)|(?<=^\⁃)\d{1,2}\.(?=\s)|(?<=\s\-)\d{1,2}\.(?=\))|(?<=^\-)\d{1,2}\.(?=\))|(?<=\s\⁃)\d{1,2}\.(?=\))|(?<=^\⁃)\d{1,2}\.(?=\))",
+                RegexOptions::REGEX_OPTION_NONE,
                 Syntax::ruby(),
             )?,
         })
@@ -179,6 +196,66 @@ fn test_extract_alphabetical_list_letters_regex() -> TestResult {
             (80, 81), // "Y"
         ]
     );
+    Ok(())
+}
+
+#[test]
+fn test_numbered_list_regex_1() -> TestResult {
+    let seg = Segmenter::new()?;
+    let text = "\
+Match below
+
+1.  abcd
+2.  xyz
+    1. as
+    2. yo
+3.  asdf
+4.  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+
+    assert_eq!(
+        seg.numbered_list_regex_1
+            .find_iter(text)
+            .collect::<Vec<_>>(),
+        vec![(12, 14), (21, 23), (33, 35), (43, 45), (49, 51), (58, 60),]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_numbered_list_regex_2() -> TestResult {
+    let seg = Segmenter::new()?;
+    let text = "\
+Match below
+
+1.  abcd
+2.  xyz
+    1. as
+    2. yo
+3.  asdf
+4.  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+
+    assert_eq!(
+        seg.numbered_list_regex_2
+            .find_iter(text)
+            .collect::<Vec<_>>(),
+        vec![(13, 15), (22, 24), (34, 36), (44, 46), (50, 52), (59, 61),]
+    );
+
     Ok(())
 }
 
