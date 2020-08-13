@@ -596,3 +596,146 @@ III) Nam
 
     Ok(())
 }
+
+impl Segmenter {
+    fn scan_lists<'a>(
+        &self,
+        text: &'a str,
+        regex1: &Regex,
+        regex2: &Regex,
+        replacement: char,
+        strip: bool,
+    ) -> SegmenterResult<Cow<'a, str>> {
+        let list_array: Vec<_> = regex1
+            .find_iter(text)
+            .map(|r| text[r.0..r.1].trim_start().parse::<i32>())
+            .collect::<Result<_, _>>()?;
+
+        let mut result: Cow<str> = Cow::Borrowed(text);
+        for (i, &each) in list_array.iter().enumerate() {
+            if !(Some(&(each + 1)) == list_array.get(i + 1)
+                || Some(&(each - 1)) == list_array.get(i - 1)
+                || (each == 0 && list_array.get(i - 1) == Some(&9))
+                || (each == 9 && list_array.get(i + 1) == Some(&0)))
+            {
+                continue;
+            }
+
+            // substitute_found_list_items()
+            result = Cow::Owned(regex2.replace_all(&result, |m: &Captures| {
+                let mut mat = m.at(0).unwrap(); // Must exists
+
+                // NOTE: 원본 루비 코드 pragmatic-segmenter와 파이썬 구현체 pySBD의 동작이 다름.
+                // pySBD의 동작을 따르겠다.
+                //
+                // Reference:
+                //   https://github.com/diasks2/pragmatic_segmenter/blob/1ade491c81f9d1d7fb3abd4c1e2e266fa5b34c42/lib/pragmatic_segmenter/list.rb#L112
+                //   https://github.com/nipunsadvilkar/pySBD/blob/90699972c8b5cd63c7fa4581419250e60b15db87/pysbd/lists_item_replacer.py#L112
+                if strip {
+                    mat = mat.trim();
+                }
+                let chomped = if mat.len() == 1 {
+                    mat
+                } else {
+                    mat.trim_matches(&['.', ']', ')'][..])
+                };
+                if each.to_string() == chomped {
+                    format!("{}{}", each, replacement)
+                } else {
+                    mat.to_string()
+                }
+            }))
+        }
+
+        Ok(result)
+    }
+}
+
+#[test]
+fn test_scan_lists() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "\
+Match below
+
+1.  abcd
+2.  xyz
+    1. as
+    2. yo
+3.  asdf
+4.  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+    let output = "\
+Match below
+
+1♨  abcd
+2♨  xyz
+    1♨ as
+    2♨ yo
+3♨  asdf
+4♨  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+    assert_eq!(
+        seg.scan_lists(
+            input,
+            &seg.numbered_list_regex_1,
+            &seg.numbered_list_regex_2,
+            '♨',
+            true
+        )?,
+        Cow::<str>::Borrowed(output)
+    );
+
+    let input = "\
+1) a
+2) b
+    1) b1
+    2) b2
+3) c
+4) 5)
+55) d
+666) e
+f77) f
+8888) f
+10)nomatch
+-10) ignore sign
+";
+    let output = "\
+1☝) a
+2☝) b
+    1☝) b1
+    2☝) b2
+3☝) c
+4☝) 5☝)
+55) d
+666) e
+f77) f
+8888) f
+10)nomatch
+-10) ignore sign
+";
+    assert_eq!(
+        seg.scan_lists(
+            input,
+            &seg.numbered_list_parens_regex,
+            &seg.numbered_list_parens_regex,
+            '☝',
+            false
+        )?,
+        Cow::<str>::Borrowed(output)
+    );
+
+    Ok(())
+}
