@@ -453,8 +453,7 @@ fn test_iterate_alphabet_array() -> TestResult {
         String::from("i. Hi")
     );
 
-    assert_eq!(
-        seg.iterate_alphabet_array("\
+    let input = "\
 Replace
 
 a. Lorem
@@ -466,8 +465,8 @@ Don't
 A. Vestibulum
 B. Proin
 C. Maecenas
-", &seg.alphabetical_list_with_periods, false, false),
-        String::from("\
+";
+    let output = "\
 Replace
 
 \ra∯ Lorem
@@ -479,11 +478,13 @@ Don't
 A. Vestibulum
 B. Proin
 C. Maecenas
-"),
+";
+    assert_eq!(
+        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, false),
+        String::from(output),
     );
 
-    assert_eq!(
-        seg.iterate_alphabet_array("\
+    let input = "\
 Do
 
 a) Lorem
@@ -503,8 +504,8 @@ C) Maecenas
 (A) Vestibulum
 (B) Proin
 (C) Maecenas
-", &seg.alphabetical_list_with_parens,  true,  false),
-        String::from("\
+";
+    let output = "\
 Do
 
 \r\ra) Lorem
@@ -524,7 +525,10 @@ C) Maecenas
 (A) Vestibulum
 (B) Proin
 (C) Maecenas
-"),
+";
+    assert_eq!(
+        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, false),
+        String::from(output),
     );
 
     let input = "\
@@ -543,8 +547,7 @@ III. Nam
         String::from(input),
     );
 
-    assert_eq!(
-        seg.iterate_alphabet_array("\
+    let input = "\
 Do
 
 i) Ut eu volutpat felis.
@@ -564,8 +567,8 @@ III) Nam
 (I) Suspendisse
 (II) Maecenas
 (III) Nam
-", &seg.alphabetical_list_with_parens,  true,  true),
-        String::from("\
+";
+    let output = "\
 Do
 
 \r\ri) Ut eu volutpat felis.
@@ -585,7 +588,10 @@ III) Nam
 (I) Suspendisse
 (II) Maecenas
 (III) Nam
-"),
+";
+    assert_eq!(
+        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, true),
+        String::from(output),
     );
 
     Ok(())
