@@ -513,7 +513,7 @@ fn test_iterate_alphabet_array() -> TestResult {
     let seg = Segmenter::new()?;
     assert_eq!(
         seg.iterate_alphabet_array("i. Hi", &seg.alphabetical_list_with_periods, false, true),
-        String::from("i. Hi")
+        "i. Hi"
     );
 
     let input = "\
@@ -544,7 +544,7 @@ C. Maecenas
 ";
     assert_eq!(
         seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, false),
-        String::from(output),
+        output,
     );
 
     let input = "\
@@ -591,7 +591,7 @@ C) Maecenas
 ";
     assert_eq!(
         seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, false),
-        String::from(output),
+        output,
     );
 
     let input = "\
@@ -607,7 +607,7 @@ III. Nam
 ";
     assert_eq!(
         seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, true),
-        String::from(input),
+        input,
     );
 
     let input = "\
@@ -654,7 +654,7 @@ III) Nam
 ";
     assert_eq!(
         seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, true),
-        String::from(output),
+        output,
     );
 
     Ok(())
