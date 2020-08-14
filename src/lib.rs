@@ -52,9 +52,13 @@ struct Segmenter {
     find_numbered_list_parens: Regex,
 
     space_between_list_items_third_rule: Rule,
+
+    substitute_list_period_rule: Rule,
+    list_marker_rule: Rule,
 }
 
 impl Segmenter {
+    #[must_use]
     fn new() -> SegmenterResult<Self> {
         fn map_from_list(list: &[&'static str]) -> HashMap<&'static str, isize> {
             list.iter()
@@ -155,7 +159,33 @@ impl Segmenter {
             //   https://rubular.com/r/GE5q6yID2j
             //   https://regex101.com/r/62YBlv/3
             space_between_list_items_third_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}☝)", "\r")?,
+
+            substitute_list_period_rule: Rule::new("♨", "∯")?,
+            list_marker_rule: Rule::new("☝", "")?,
         })
+    }
+
+    #[must_use]
+    fn add_line_break<'a>(&self, text: &'a str) -> SegmenterResult<String> {
+        // format_alphabetical_lists()
+        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, false);
+        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, false);
+
+        // format_roman_numeral_lists()
+        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, true);
+        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, true);
+
+        // format_numbered_list_with_periods()
+        let text = self.scan_lists(&text, &self.numbered_list_regex_1, &self.numbered_list_regex_2, '♨', true)?;
+        let text = self.add_line_breaks_for_numbered_list_with_periods(&text);
+        let text = self.substitute_list_period_rule.replace_all(&text);
+
+        // format_numbered_list_with_parens()
+        let text = self.scan_lists(&text, &self.numbered_list_parens_regex, &self.numbered_list_parens_regex, '☝', false)?;
+        let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
+        let text = self.list_marker_rule.replace_all(&text);
+
+        Ok(text)
     }
 
     fn replace_alphabet_list(&self, text: &str, what_to_replace: &str) -> String {
