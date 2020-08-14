@@ -38,6 +38,9 @@ struct Segmenter {
     numbered_list_regex_2: Regex,
     numbered_list_parens_regex: Regex,
 
+    find_numbered_list_1: Regex,
+    find_numbered_list_2: Regex,
+
     space_between_list_items_first_rule: Rule,
     space_between_list_items_second_rule: Rule,
 }
@@ -113,6 +116,16 @@ impl Segmenter {
 
             // Example: https://regex101.com/r/O8bLbW/1
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
+
+            // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L143
+            //
+            // TODO: Add tests
+            find_numbered_list_1: re(r"♨.+\n.+♨|♨.+\r.+♨")?,
+
+            // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L144
+            //
+            // TODO: Add tests
+            find_numbered_list_2: re(r"for\s\d{1,2}♨\s[a-z]")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
             //
@@ -798,6 +811,36 @@ f77) f
             false
         )?,
         Cow::<str>::Borrowed(output)
+    );
+
+    Ok(())
+}
+
+impl Segmenter {
+    fn add_line_breaks_for_numbered_list_with_periods<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        if text.contains('♨')
+            && self.find_numbered_list_1.find(text).is_none()
+            && self.find_numbered_list_2.find(text).is_none()
+        {
+            let text = self.space_between_list_items_first_rule.replace_all(text);
+            let text = self.space_between_list_items_second_rule.replace_all(&text);
+            return Cow::Owned(text)
+        }
+
+        Cow::Borrowed(text)
+    }
+}
+
+#[test]
+fn test_add_line_breaks_for_numbered_list_with_periods() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "1♨ abcd 2♨ xyz 3♨ asdf 4♨ asdf";
+    let output = "1♨ abcd\r2♨ xyz\r3♨ asdf\r4♨ asdf";
+
+    assert_eq!(
+        seg.add_line_breaks_for_numbered_list_with_periods(input),
+        output
     );
 
     Ok(())
