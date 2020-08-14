@@ -37,6 +37,7 @@ pub struct ListItemReplacer {
 impl ListItemReplacer {
     #[must_use]
     pub fn new() -> SegmenterResult<Self> {
+        #[must_use]
         fn map_from_list(list: &[&'static str]) -> HashMap<&'static str, isize> {
             list.iter()
                 .enumerate()
@@ -44,6 +45,7 @@ impl ListItemReplacer {
                 .collect()
         }
 
+        #[must_use]
         fn re(regex: &str) -> SegmenterResult<Regex> {
             Ok(Regex::with_options(
                 regex,
@@ -52,6 +54,7 @@ impl ListItemReplacer {
             )?)
         }
 
+        #[must_use]
         fn re_i(regex: &str) -> SegmenterResult<Regex> {
             Ok(Regex::with_options(
                 regex,
