@@ -1,3 +1,5 @@
+mod rule;
+
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
@@ -6,23 +8,10 @@ use std::error::Error;
 // Rust regex crate나 Intel hyperscan으로 바꾸면 성능 올라감
 use onig::{Captures, Regex, RegexOptions, Syntax};
 
+use rule::Rule;
+
 // TODO: 에러 핸들링 바르게 하기, boxed error 안쓰기
 type SegmenterResult<T> = Result<T, Box<dyn Error>>;
-
-struct Rule(Regex, &'static str);
-
-impl Rule {
-    fn new(regex: &str, replace: &'static str) -> SegmenterResult<Self> {
-        Ok(Rule(
-            Regex::with_options(regex, RegexOptions::REGEX_OPTION_NONE, Syntax::ruby())?,
-            replace,
-        ))
-    }
-
-    fn replace_all(&self, text: &str) -> String {
-        self.0.replace_all(text, self.1)
-    }
-}
 
 // TODO: 불필요하게 정규표현식이 많이 사용된다. 정규표현식과 문자열 복사가 필요 없는 버전으로 바꿀
 // 수 있으나, 그러려면 알고리즘에 많이 손대야한다. 일단은 pySBD와 동작을 동일하게 유지하기 위해,
