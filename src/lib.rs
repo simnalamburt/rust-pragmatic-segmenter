@@ -26,76 +26,75 @@ type SegmenterResult<T> = Result<T, Box<dyn Error>>;
 
 impl Segmenter {
     fn new() -> SegmenterResult<Self> {
+        fn map_from_list(list: &[&'static str]) -> HashMap<&'static str, isize> {
+            list.iter()
+                .enumerate()
+                .map(|(idx, &s)| (s, idx as isize))
+                .collect()
+        }
+
+        fn re(regex: &str) -> SegmenterResult<Regex> {
+            Ok(Regex::with_options(
+                regex,
+                RegexOptions::REGEX_OPTION_NONE,
+                Syntax::ruby(),
+            )?)
+        }
+
+        fn re_i(regex: &str) -> SegmenterResult<Regex> {
+            Ok(Regex::with_options(
+                regex,
+                RegexOptions::REGEX_OPTION_IGNORECASE,
+                Syntax::ruby(),
+            )?)
+        }
+
         Ok(Segmenter {
-            roman_numerals: [
+            roman_numerals: map_from_list(&[
                 "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii",
                 "xiv", "x", "xi", "xii", "xiii", "xv", "xvi", "xvii", "xviii", "xix", "xx",
-            ]
-            .iter()
-            .enumerate()
-            .map(|(idx, s)| (*s, idx as isize))
-            .collect(),
+            ]),
 
-            latin_numerals: [
+            latin_numerals: map_from_list(&[
                 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
                 "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-            ]
-            .iter()
-            .enumerate()
-            .map(|(idx, s)| (*s, idx as isize))
-            .collect(),
+            ]),
 
             // Example: https://rubular.com/r/XcpaJKH0sz
             //
             // NOTE: 루비 버전은 case sensitive하고, 파이썬 버전은 case insensitive한데, 루비
             // 버전에서 case sensitive하게 만들어진것이 실수같음. Case insensitive하게 만든다.
-            alphabetical_list_with_periods: Regex::with_options(
+            alphabetical_list_with_periods: re_i(
                 r"(?<=^)[a-z](?=\.)|(?<=\A)[a-z](?=\.)|(?<=\s)[a-z](?=\.)",
-                RegexOptions::REGEX_OPTION_IGNORECASE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://rubular.com/r/Gu5rQapywf
-            alphabetical_list_with_parens: Regex::with_options(
+            alphabetical_list_with_parens: re_i(
                 r"(?<=\()[a-z]+(?=\))|(?<=^)[a-z]+(?=\))|(?<=\A)[a-z]+(?=\))|(?<=\s)[a-z]+(?=\))",
-                RegexOptions::REGEX_OPTION_IGNORECASE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://rubular.com/r/wMpnVedEIb
-            alphabetical_list_letters_and_periods_regex: Regex::with_options(
+            alphabetical_list_letters_and_periods_regex: re_i(
                 r"(?<=^)[a-z]\.|(?<=\A)[a-z]\.|(?<=\s)[a-z]\.",
-                RegexOptions::REGEX_OPTION_IGNORECASE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://rubular.com/r/NsNFSqrNvJ
-            extract_alphabetical_list_letters_regex: Regex::with_options(
+            extract_alphabetical_list_letters_regex: re_i(
                 r"\([a-z]+(?=\))|(?<=^)[a-z]+(?=\))|(?<=\A)[a-z]+(?=\))|(?<=\s)[a-z]+(?=\))",
-                RegexOptions::REGEX_OPTION_IGNORECASE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://regex101.com/r/cd3yNz/2
-            numbered_list_regex_1: Regex::with_options(
+            numbered_list_regex_1: re(
                 r"\s\d{1,2}(?=\.\s)|^\d{1,2}(?=\.\s)|\s\d{1,2}(?=\.\))|^\d{1,2}(?=\.\))|(?<=\s\-)\d{1,2}(?=\.\s)|(?<=^\-)\d{1,2}(?=\.\s)|(?<=\s\⁃)\d{1,2}(?=\.\s)|(?<=^\⁃)\d{1,2}(?=\.\s)|(?<=s\-)\d{1,2}(?=\.\))|(?<=^\-)\d{1,2}(?=\.\))|(?<=\s\⁃)\d{1,2}(?=\.\))|(?<=^\⁃)\d{1,2}(?=\.\))",
-                RegexOptions::REGEX_OPTION_NONE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://regex101.com/r/cd3yNz/1
-            numbered_list_regex_2: Regex::with_options(
+            numbered_list_regex_2: re(
                 r"(?<=\s)\d{1,2}\.(?=\s)|^\d{1,2}\.(?=\s)|(?<=\s)\d{1,2}\.(?=\))|^\d{1,2}\.(?=\))|(?<=\s\-)\d{1,2}\.(?=\s)|(?<=^\-)\d{1,2}\.(?=\s)|(?<=\s\⁃)\d{1,2}\.(?=\s)|(?<=^\⁃)\d{1,2}\.(?=\s)|(?<=\s\-)\d{1,2}\.(?=\))|(?<=^\-)\d{1,2}\.(?=\))|(?<=\s\⁃)\d{1,2}\.(?=\))|(?<=^\⁃)\d{1,2}\.(?=\))",
-                RegexOptions::REGEX_OPTION_NONE,
-                Syntax::ruby(),
             )?,
 
             // Example: https://regex101.com/r/O8bLbW/1
-            numbered_list_parens_regex: Regex::with_options(
-                r"\d{1,2}(?=\)\s)",
-                RegexOptions::REGEX_OPTION_NONE,
-                Syntax::ruby(),
-            )?,
+            numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
         })
     }
 }
