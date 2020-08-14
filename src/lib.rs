@@ -274,7 +274,7 @@ impl Segmenter {
             .map(|r| text[r.0..r.1].trim_start().parse::<i32>())
             .collect::<Result<_, _>>()?;
 
-        let mut result: Cow<str> = Cow::Borrowed(text);
+        let mut result = Cow::Borrowed(text);
         for (i, &each) in list_array.iter().enumerate() {
             if !(Some(&(each + 1)) == list_array.get(i + 1)
                 || Some(&(each - 1)) == list_array.get(i - 1)
