@@ -6,6 +6,24 @@ use std::error::Error;
 // Rust regex crate나 Intel hyperscan으로 바꾸면 성능 올라감
 use onig::{Captures, Regex, RegexOptions, Syntax};
 
+// TODO: 에러 핸들링 바르게 하기, boxed error 안쓰기
+type SegmenterResult<T> = Result<T, Box<dyn Error>>;
+
+struct Rule(Regex, &'static str);
+
+impl Rule {
+    fn new(regex: &str, replace: &'static str) -> SegmenterResult<Self> {
+        Ok(Rule(
+            Regex::with_options(regex, RegexOptions::REGEX_OPTION_NONE, Syntax::ruby())?,
+            replace,
+        ))
+    }
+
+    fn replace_all(&self, text: &str) -> String {
+        self.0.replace_all(text, self.1)
+    }
+}
+
 struct Segmenter {
     roman_numerals: HashMap<&'static str, isize>,
     latin_numerals: HashMap<&'static str, isize>,
@@ -21,8 +39,6 @@ struct Segmenter {
     numbered_list_parens_regex: Regex,
 }
 
-// TODO: 에러 핸들링 바르게 하기
-type SegmenterResult<T> = Result<T, Box<dyn Error>>;
 
 impl Segmenter {
     fn new() -> SegmenterResult<Self> {
