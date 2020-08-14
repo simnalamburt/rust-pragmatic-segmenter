@@ -24,6 +24,11 @@ impl Rule {
     }
 }
 
+// TODO: 불필요하게 정규표현식이 많이 사용된다. 정규표현식과 문자열 복사가 필요 없는 버전으로 바꿀
+// 수 있으나, 그러려면 알고리즘에 많이 손대야한다. 일단은 pySBD와 동작을 동일하게 유지하기 위해,
+// 정규표현식을 사용하는 버전으로 작성한다.
+//
+// TODO: 필요에 따라 메서드들에 must_use 붙이기
 struct Segmenter {
     roman_numerals: HashMap<&'static str, isize>,
     latin_numerals: HashMap<&'static str, isize>,
@@ -122,13 +127,9 @@ impl Segmenter {
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
 
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L143
-            //
-            // TODO: Add tests
             find_numbered_list_1: re(r"♨.+\n.+♨|♨.+\r.+♨")?,
 
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L144
-            //
-            // TODO: Add tests
             find_numbered_list_2: re(r"for\s\d{1,2}♨\s[a-z]")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
@@ -146,8 +147,6 @@ impl Segmenter {
             space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
 
             // Refernce: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L154
-            //
-            // TODO: Add tests
             find_numbered_list_parens: re(r"☝.+\n.+☝|☝.+\r.+☝")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
@@ -223,8 +222,7 @@ impl Segmenter {
 
         let len = list_array.len();
 
-        // TODO: 이하 코드에서 매 루프마다 복사가 발생함, 최적화 가능함
-        let mut result: Cow<str> = Cow::Borrowed(text);
+        let mut result = Cow::Borrowed(text);
         for ind in 0..len {
             let is_strange = if len <= 1 {
                 // NOTE: 원본 코드에선 len이 1이면 무조건 스킵하게 만들어져있고, 버그로 생각된다.
@@ -623,7 +621,7 @@ f77) f
 
     #[test]
     fn test_iterate_alphabet_array() -> TestResult {
-        // TODO: 이 테스트케이스를 보면 버그때문에 match가 엉터리로 이뤄지고있는것을 볼 수 있지만,
+        // NOTE: 이 테스트케이스를 보면 버그때문에 match가 엉터리로 이뤄지고있는것을 볼 수 있지만,
         // pySBD와 동작을 맞추는것이 목표이기때문에 버그도 그대로 유지한다.
 
         let seg = Segmenter::new()?;
