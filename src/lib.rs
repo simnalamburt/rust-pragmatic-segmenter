@@ -158,264 +158,7 @@ impl Segmenter {
             space_between_list_items_third_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}☝)", "\r")?,
         })
     }
-}
 
-#[cfg(test)]
-type TestResult = Result<(), Box<dyn Error>>;
-
-#[test]
-fn test_alphabetical_list_with_periods() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "a. The first item b. The second item c. The third list item D. case insesitive \
-E. Don't select the nextF.dont't select this G should be followed by dot";
-
-    assert_eq!(
-        seg.alphabetical_list_with_periods
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![
-            (0, 1),   // a
-            (18, 19), // b
-            (37, 38), // c
-            (60, 61), // D
-            (79, 80), // E
-        ]
-    );
-    Ok(())
-}
-
-#[test]
-fn test_alphabetical_list_with_parens() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "\
-a) Hello world.
-b) Hello world.
-c) Hello world.
-d) Hello world.
-e) Hello world.
-f) Hello world.
-
-(i) Hello world.
-(ii) Hello world.
-(iii) Hello world.
-(iv) Hello world.
-(v) Hello world.
-(vi) Hello world.
-";
-
-    assert_eq!(
-        seg.alphabetical_list_with_parens
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![
-            (0, 1,),
-            (16, 17,),
-            (32, 33,),
-            (48, 49,),
-            (64, 65,),
-            (80, 81,),
-            (98, 99,),
-            (115, 117,),
-            (133, 136,),
-            (152, 154,),
-            (170, 171,),
-            (187, 189,),
-        ]
-    );
-    Ok(())
-}
-
-#[test]
-fn test_alphabetical_list_letters_and_periods_regex() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "His name is Mark E. Smith. a. here it is b. another c. one more
- They went to the store. It was John A. Smith. She was Jane B. Smith.";
-
-    assert_eq!(
-        seg.alphabetical_list_letters_and_periods_regex
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![
-            (17, 19),   // "E."
-            (27, 29),   // "a."
-            (41, 43),   // "b."
-            (52, 54),   // "c."
-            (101, 103), // "A."
-            (124, 126), // "B."
-        ]
-    );
-    Ok(())
-}
-
-#[test]
-fn test_extract_alphabetical_list_letters_regex() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text =
-        "a) here it is b) another c) one more \nThey went to the store. W) hello X) hello Y) hello";
-
-    assert_eq!(
-        seg.extract_alphabetical_list_letters_regex
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![
-            (0, 1),   // "a"
-            (14, 15), // "b"
-            (25, 26), // "c"
-            (62, 63), // "W"
-            (71, 72), // "X"
-            (80, 81), // "Y"
-        ]
-    );
-    Ok(())
-}
-
-#[test]
-fn test_numbered_list_regex_1() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "\
-Match below
-
-1.  abcd
-2.  xyz
-    1. as
-    2. yo
-3.  asdf
-4.  asdf
-
-Dont match below
-
-1.abc
-2) asdf
-333. asdf
-";
-
-    assert_eq!(
-        seg.numbered_list_regex_1
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![(12, 14), (21, 23), (33, 35), (43, 45), (49, 51), (58, 60),]
-    );
-
-    Ok(())
-}
-
-#[test]
-fn test_numbered_list_regex_2() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "\
-Match below
-
-1.  abcd
-2.  xyz
-    1. as
-    2. yo
-3.  asdf
-4.  asdf
-
-Dont match below
-
-1.abc
-2) asdf
-333. asdf
-";
-
-    assert_eq!(
-        seg.numbered_list_regex_2
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![(13, 15), (22, 24), (34, 36), (44, 46), (50, 52), (59, 61),]
-    );
-
-    Ok(())
-}
-
-#[test]
-fn test_numbered_list_parens_regex() -> TestResult {
-    let seg = Segmenter::new()?;
-    let text = "\
-1) a
-2) b
-    1) b1
-    2) b2
-3) c
-4) 5)
-55) d
-666) e
-f77) f
-8888) f
-10)nomatch
--10) ignore sign
-";
-
-    assert_eq!(
-        seg.numbered_list_parens_regex
-            .find_iter(text)
-            .collect::<Vec<_>>(),
-        vec![
-            (0, 1),
-            (5, 6),
-            (14, 15),
-            (24, 25),
-            (30, 31),
-            (35, 36),
-            (38, 39),
-            (41, 43),
-            (48, 50),
-            (55, 57),
-            (63, 65),
-            (81, 83),
-        ]
-    );
-
-    Ok(())
-}
-
-#[test]
-fn test_space_between_list_items_first_rule() -> TestResult {
-    let seg = Segmenter::new()?;
-
-    let input = "abcd  ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item";
-    let output = "abcd  ⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item";
-
-    assert_eq!(
-        seg.space_between_list_items_first_rule.replace_all(input),
-        output
-    );
-
-    Ok(())
-}
-
-#[test]
-fn test_space_between_list_items_second_rule() -> TestResult {
-    let seg = Segmenter::new()?;
-
-    let input = "1♨ The first item 2♨ The second item";
-    let output = "1♨ The first item\r2♨ The second item";
-
-    assert_eq!(
-        seg.space_between_list_items_second_rule.replace_all(input),
-        output
-    );
-
-    Ok(())
-}
-
-#[test]
-fn test_space_between_list_items_third_rule() -> TestResult {
-    let seg = Segmenter::new()?;
-
-    let input = "1☝) The first item 2☝) The second item";
-    let output = "1☝) The first item\r2☝) The second item";
-
-    assert_eq!(
-        seg.space_between_list_items_third_rule.replace_all(input),
-        output
-    );
-
-    Ok(())
-}
-
-impl Segmenter {
     fn replace_alphabet_list(&self, text: &str, what_to_replace: &str) -> String {
         self.alphabetical_list_letters_and_periods_regex
             .replace_all(text, |m: &Captures| {
@@ -428,19 +171,7 @@ impl Segmenter {
                 }
             })
     }
-}
 
-#[test]
-fn test_replace_alphabet_list() -> TestResult {
-    let seg = Segmenter::new()?;
-    assert_eq!(
-        seg.replace_alphabet_list("a. ffegnog b. fgegkl c.", "b"),
-        "a. ffegnog \rb∯ fgegkl c."
-    );
-    Ok(())
-}
-
-impl Segmenter {
     fn replace_alphabet_list_parens(&self, text: &str, what_to_replace: &str) -> String {
         self.extract_alphabetical_list_letters_regex
             .replace_all(text, |m: &Captures| {
@@ -466,23 +197,7 @@ impl Segmenter {
                 }
             })
     }
-}
 
-#[test]
-fn test_replace_alphabet_list_parens() -> TestResult {
-    let seg = Segmenter::new()?;
-    assert_eq!(
-        seg.replace_alphabet_list_parens("a) ffegnog (b) fgegkl c)", "a"),
-        "\ra) ffegnog (b) fgegkl c)"
-    );
-    assert_eq!(
-        seg.replace_alphabet_list_parens("a) ffegnog (b) fgegkl c)", "b"),
-        "a) ffegnog \r&✂&b) fgegkl c)"
-    );
-    Ok(())
-}
-
-impl Segmenter {
     fn iterate_alphabet_array<'a>(
         &self,
         text: &'a str,
@@ -547,164 +262,7 @@ impl Segmenter {
 
         result
     }
-}
 
-#[test]
-fn test_iterate_alphabet_array() -> TestResult {
-    // TODO: 이 테스트케이스를 보면 버그때문에 match가 엉터리로 이뤄지고있는것을 볼 수 있지만,
-    // pySBD와 동작을 맞추는것이 목표이기때문에 버그도 그대로 유지한다.
-
-    let seg = Segmenter::new()?;
-    assert_eq!(
-        seg.iterate_alphabet_array("i. Hi", &seg.alphabetical_list_with_periods, false, true),
-        "i. Hi"
-    );
-
-    let input = "\
-Replace
-
-a. Lorem
-b. Donec
-c. Aenean
-
-Don't
-
-A. Vestibulum
-B. Proin
-C. Maecenas
-";
-    let output = "\
-Replace
-
-\ra∯ Lorem
-\rb∯ Donec
-\rc∯ Aenean
-
-Don't
-
-A. Vestibulum
-B. Proin
-C. Maecenas
-";
-    assert_eq!(
-        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, false),
-        output,
-    );
-
-    let input = "\
-Do
-
-a) Lorem
-b) Donec
-c) Aenean
-
-(a) Lorem
-(b) Donec
-(c) Aenean
-
-Don't
-
-A) Vestibulum
-B) Proin
-C) Maecenas
-
-(A) Vestibulum
-(B) Proin
-(C) Maecenas
-";
-    let output = "\
-Do
-
-\r\ra) Lorem
-\r\rb) Donec
-\r\rc) Aenean
-
-\r&✂&a) Lorem
-\r&✂&b) Donec
-\r&✂&c) Aenean
-
-Don't
-
-A) Vestibulum
-B) Proin
-C) Maecenas
-
-(A) Vestibulum
-(B) Proin
-(C) Maecenas
-";
-    assert_eq!(
-        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, false),
-        output,
-    );
-
-    let input = "\
-NOP
-
-i. Ut eu volutpat felis.
-ii. Mauris
-iii. Proin
-
-I. Suspendisse
-II. Maecenas
-III. Nam
-";
-    assert_eq!(
-        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, true),
-        input,
-    );
-
-    let input = "\
-Do
-
-i) Ut eu volutpat felis.
-ii) Mauris
-iii) Proin
-
-(i) Ut eu volutpat felis.
-(ii) Mauris
-(iii) Proin
-
-Don't
-
-I) Suspendisse
-II) Maecenas
-III) Nam
-
-(I) Suspendisse
-(II) Maecenas
-(III) Nam
-";
-    let output = "\
-Do
-
-\r\ri) Ut eu volutpat felis.
-\r\rii) Mauris
-\r\riii) Proin
-
-\r&✂&i) Ut eu volutpat felis.
-\r&✂&ii) Mauris
-\r&✂&iii) Proin
-
-Don't
-
-I) Suspendisse
-II) Maecenas
-III) Nam
-
-(I) Suspendisse
-(II) Maecenas
-(III) Nam
-";
-    assert_eq!(
-        seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, true),
-        output,
-    );
-
-    Ok(())
-}
-
-impl Segmenter {
     fn scan_lists<'a>(
         &self,
         text: &'a str,
@@ -756,13 +314,147 @@ impl Segmenter {
 
         Ok(result)
     }
+
+    fn add_line_breaks_for_numbered_list_with_periods<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        if text.contains('♨')
+            && self.find_numbered_list_1.find(text).is_none()
+            && self.find_numbered_list_2.find(text).is_none()
+        {
+            let text = self.space_between_list_items_first_rule.replace_all(text);
+            let text = self.space_between_list_items_second_rule.replace_all(&text);
+            return Cow::Owned(text);
+        }
+
+        Cow::Borrowed(text)
+    }
+
+    fn add_line_breaks_for_numbered_list_with_parens<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        if text.contains('☝') && self.find_numbered_list_parens.find(text).is_none() {
+            let text = self.space_between_list_items_third_rule.replace_all(text);
+            return Cow::Owned(text);
+        }
+
+        Cow::Borrowed(text)
+    }
 }
 
-#[test]
-fn test_scan_lists() -> TestResult {
-    let seg = Segmenter::new()?;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let input = "\
+    type TestResult = Result<(), Box<dyn Error>>;
+
+    #[test]
+    fn test_alphabetical_list_with_periods() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text =
+            "a. The first item b. The second item c. The third list item D. case insesitive \
+E. Don't select the nextF.dont't select this G should be followed by dot";
+
+        assert_eq!(
+            seg.alphabetical_list_with_periods
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 1),   // a
+                (18, 19), // b
+                (37, 38), // c
+                (60, 61), // D
+                (79, 80), // E
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_alphabetical_list_with_parens() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text = "\
+a) Hello world.
+b) Hello world.
+c) Hello world.
+d) Hello world.
+e) Hello world.
+f) Hello world.
+
+(i) Hello world.
+(ii) Hello world.
+(iii) Hello world.
+(iv) Hello world.
+(v) Hello world.
+(vi) Hello world.
+";
+
+        assert_eq!(
+            seg.alphabetical_list_with_parens
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 1,),
+                (16, 17,),
+                (32, 33,),
+                (48, 49,),
+                (64, 65,),
+                (80, 81,),
+                (98, 99,),
+                (115, 117,),
+                (133, 136,),
+                (152, 154,),
+                (170, 171,),
+                (187, 189,),
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_alphabetical_list_letters_and_periods_regex() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text = "His name is Mark E. Smith. a. here it is b. another c. one more
+ They went to the store. It was John A. Smith. She was Jane B. Smith.";
+
+        assert_eq!(
+            seg.alphabetical_list_letters_and_periods_regex
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![
+                (17, 19),   // "E."
+                (27, 29),   // "a."
+                (41, 43),   // "b."
+                (52, 54),   // "c."
+                (101, 103), // "A."
+                (124, 126), // "B."
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_extract_alphabetical_list_letters_regex() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text =
+        "a) here it is b) another c) one more \nThey went to the store. W) hello X) hello Y) hello";
+
+        assert_eq!(
+            seg.extract_alphabetical_list_letters_regex
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 1),   // "a"
+                (14, 15), // "b"
+                (25, 26), // "c"
+                (62, 63), // "W"
+                (71, 72), // "X"
+                (80, 81), // "Y"
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_numbered_list_regex_1() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text = "\
 Match below
 
 1.  abcd
@@ -778,7 +470,333 @@ Dont match below
 2) asdf
 333. asdf
 ";
-    let output = "\
+
+        assert_eq!(
+            seg.numbered_list_regex_1
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![(12, 14), (21, 23), (33, 35), (43, 45), (49, 51), (58, 60),]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_numbered_list_regex_2() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text = "\
+Match below
+
+1.  abcd
+2.  xyz
+    1. as
+    2. yo
+3.  asdf
+4.  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+
+        assert_eq!(
+            seg.numbered_list_regex_2
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![(13, 15), (22, 24), (34, 36), (44, 46), (50, 52), (59, 61),]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_numbered_list_parens_regex() -> TestResult {
+        let seg = Segmenter::new()?;
+        let text = "\
+1) a
+2) b
+    1) b1
+    2) b2
+3) c
+4) 5)
+55) d
+666) e
+f77) f
+8888) f
+10)nomatch
+-10) ignore sign
+";
+
+        assert_eq!(
+            seg.numbered_list_parens_regex
+                .find_iter(text)
+                .collect::<Vec<_>>(),
+            vec![
+                (0, 1),
+                (5, 6),
+                (14, 15),
+                (24, 25),
+                (30, 31),
+                (35, 36),
+                (38, 39),
+                (41, 43),
+                (48, 50),
+                (55, 57),
+                (63, 65),
+                (81, 83),
+            ]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_space_between_list_items_first_rule() -> TestResult {
+        let seg = Segmenter::new()?;
+
+        let input = "abcd  ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item";
+        let output = "abcd  ⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item";
+
+        assert_eq!(
+            seg.space_between_list_items_first_rule.replace_all(input),
+            output
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_space_between_list_items_second_rule() -> TestResult {
+        let seg = Segmenter::new()?;
+
+        let input = "1♨ The first item 2♨ The second item";
+        let output = "1♨ The first item\r2♨ The second item";
+
+        assert_eq!(
+            seg.space_between_list_items_second_rule.replace_all(input),
+            output
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_space_between_list_items_third_rule() -> TestResult {
+        let seg = Segmenter::new()?;
+
+        let input = "1☝) The first item 2☝) The second item";
+        let output = "1☝) The first item\r2☝) The second item";
+
+        assert_eq!(
+            seg.space_between_list_items_third_rule.replace_all(input),
+            output
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_replace_alphabet_list() -> TestResult {
+        let seg = Segmenter::new()?;
+        assert_eq!(
+            seg.replace_alphabet_list("a. ffegnog b. fgegkl c.", "b"),
+            "a. ffegnog \rb∯ fgegkl c."
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_replace_alphabet_list_parens() -> TestResult {
+        let seg = Segmenter::new()?;
+        assert_eq!(
+            seg.replace_alphabet_list_parens("a) ffegnog (b) fgegkl c)", "a"),
+            "\ra) ffegnog (b) fgegkl c)"
+        );
+        assert_eq!(
+            seg.replace_alphabet_list_parens("a) ffegnog (b) fgegkl c)", "b"),
+            "a) ffegnog \r&✂&b) fgegkl c)"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_iterate_alphabet_array() -> TestResult {
+        // TODO: 이 테스트케이스를 보면 버그때문에 match가 엉터리로 이뤄지고있는것을 볼 수 있지만,
+        // pySBD와 동작을 맞추는것이 목표이기때문에 버그도 그대로 유지한다.
+
+        let seg = Segmenter::new()?;
+        assert_eq!(
+            seg.iterate_alphabet_array("i. Hi", &seg.alphabetical_list_with_periods, false, true),
+            "i. Hi"
+        );
+
+        let input = "\
+Replace
+
+a. Lorem
+b. Donec
+c. Aenean
+
+Don't
+
+A. Vestibulum
+B. Proin
+C. Maecenas
+";
+        let output = "\
+Replace
+
+\ra∯ Lorem
+\rb∯ Donec
+\rc∯ Aenean
+
+Don't
+
+A. Vestibulum
+B. Proin
+C. Maecenas
+";
+        assert_eq!(
+            seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, false),
+            output,
+        );
+
+        let input = "\
+Do
+
+a) Lorem
+b) Donec
+c) Aenean
+
+(a) Lorem
+(b) Donec
+(c) Aenean
+
+Don't
+
+A) Vestibulum
+B) Proin
+C) Maecenas
+
+(A) Vestibulum
+(B) Proin
+(C) Maecenas
+";
+        let output = "\
+Do
+
+\r\ra) Lorem
+\r\rb) Donec
+\r\rc) Aenean
+
+\r&✂&a) Lorem
+\r&✂&b) Donec
+\r&✂&c) Aenean
+
+Don't
+
+A) Vestibulum
+B) Proin
+C) Maecenas
+
+(A) Vestibulum
+(B) Proin
+(C) Maecenas
+";
+        assert_eq!(
+            seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, false),
+            output,
+        );
+
+        let input = "\
+NOP
+
+i. Ut eu volutpat felis.
+ii. Mauris
+iii. Proin
+
+I. Suspendisse
+II. Maecenas
+III. Nam
+";
+        assert_eq!(
+            seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_periods, false, true),
+            input,
+        );
+
+        let input = "\
+Do
+
+i) Ut eu volutpat felis.
+ii) Mauris
+iii) Proin
+
+(i) Ut eu volutpat felis.
+(ii) Mauris
+(iii) Proin
+
+Don't
+
+I) Suspendisse
+II) Maecenas
+III) Nam
+
+(I) Suspendisse
+(II) Maecenas
+(III) Nam
+";
+        let output = "\
+Do
+
+\r\ri) Ut eu volutpat felis.
+\r\rii) Mauris
+\r\riii) Proin
+
+\r&✂&i) Ut eu volutpat felis.
+\r&✂&ii) Mauris
+\r&✂&iii) Proin
+
+Don't
+
+I) Suspendisse
+II) Maecenas
+III) Nam
+
+(I) Suspendisse
+(II) Maecenas
+(III) Nam
+";
+        assert_eq!(
+            seg.iterate_alphabet_array(input, &seg.alphabetical_list_with_parens, true, true),
+            output,
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_scan_lists() -> TestResult {
+        let seg = Segmenter::new()?;
+
+        let input = "\
+Match below
+
+1.  abcd
+2.  xyz
+    1. as
+    2. yo
+3.  asdf
+4.  asdf
+
+Dont match below
+
+1.abc
+2) asdf
+333. asdf
+";
+        let output = "\
 Match below
 
 1♨  abcd
@@ -794,18 +812,18 @@ Dont match below
 2) asdf
 333. asdf
 ";
-    assert_eq!(
-        seg.scan_lists(
-            input,
-            &seg.numbered_list_regex_1,
-            &seg.numbered_list_regex_2,
-            '♨',
-            true
-        )?,
-        Cow::<str>::Borrowed(output)
-    );
+        assert_eq!(
+            seg.scan_lists(
+                input,
+                &seg.numbered_list_regex_1,
+                &seg.numbered_list_regex_2,
+                '♨',
+                true
+            )?,
+            Cow::<str>::Borrowed(output)
+        );
 
-    let input = "\
+        let input = "\
 1) a
 2) b
     1) b1
@@ -819,7 +837,7 @@ f77) f
 10)nomatch
 -10) ignore sign
 ";
-    let output = "\
+        let output = "\
 1☝) a
 2☝) b
     1☝) b1
@@ -833,72 +851,47 @@ f77) f
 10)nomatch
 -10) ignore sign
 ";
-    assert_eq!(
-        seg.scan_lists(
-            input,
-            &seg.numbered_list_parens_regex,
-            &seg.numbered_list_parens_regex,
-            '☝',
-            false
-        )?,
-        Cow::<str>::Borrowed(output)
-    );
+        assert_eq!(
+            seg.scan_lists(
+                input,
+                &seg.numbered_list_parens_regex,
+                &seg.numbered_list_parens_regex,
+                '☝',
+                false
+            )?,
+            Cow::<str>::Borrowed(output)
+        );
 
-    Ok(())
-}
-
-impl Segmenter {
-    fn add_line_breaks_for_numbered_list_with_periods<'a>(&self, text: &'a str) -> Cow<'a, str> {
-        if text.contains('♨')
-            && self.find_numbered_list_1.find(text).is_none()
-            && self.find_numbered_list_2.find(text).is_none()
-        {
-            let text = self.space_between_list_items_first_rule.replace_all(text);
-            let text = self.space_between_list_items_second_rule.replace_all(&text);
-            return Cow::Owned(text)
-        }
-
-        Cow::Borrowed(text)
+        Ok(())
     }
-}
 
-#[test]
-fn test_add_line_breaks_for_numbered_list_with_periods() -> TestResult {
-    let seg = Segmenter::new()?;
+    #[test]
+    fn test_add_line_breaks_for_numbered_list_with_periods() -> TestResult {
+        let seg = Segmenter::new()?;
 
-    let input = "1♨ abcd 2♨ xyz 3♨ asdf 4♨ asdf";
-    let output = "1♨ abcd\r2♨ xyz\r3♨ asdf\r4♨ asdf";
+        let input = "1♨ abcd 2♨ xyz 3♨ asdf 4♨ asdf";
+        let output = "1♨ abcd\r2♨ xyz\r3♨ asdf\r4♨ asdf";
 
-    assert_eq!(
-        seg.add_line_breaks_for_numbered_list_with_periods(input),
-        output
-    );
+        assert_eq!(
+            seg.add_line_breaks_for_numbered_list_with_periods(input),
+            output
+        );
 
-    Ok(())
-}
-
-impl Segmenter {
-    fn add_line_breaks_for_numbered_list_with_parens<'a>(&self, text: &'a str) -> Cow<'a, str> {
-        if text.contains('☝') && self.find_numbered_list_parens.find(text).is_none() {
-            let text = self.space_between_list_items_third_rule.replace_all(text);
-            return Cow::Owned(text)
-        }
-
-        Cow::Borrowed(text)
+        Ok(())
     }
-}
 
-#[test]
-fn test_add_line_breaks_for_numbered_list_with_parens() -> TestResult {
-    let seg = Segmenter::new()?;
+    #[test]
+    fn test_add_line_breaks_for_numbered_list_with_parens() -> TestResult {
+        let seg = Segmenter::new()?;
 
-    let input = "1☝) The first item 2☝) The second item";
-    let output = "1☝) The first item\r2☝) The second item";
+        let input = "1☝) The first item 2☝) The second item";
+        let output = "1☝) The first item\r2☝) The second item";
 
-    assert_eq!(
-        seg.add_line_breaks_for_numbered_list_with_parens(input),
-        output
-    );
+        assert_eq!(
+            seg.add_line_breaks_for_numbered_list_with_parens(input),
+            output
+        );
 
-    Ok(())
+        Ok(())
+    }
 }
