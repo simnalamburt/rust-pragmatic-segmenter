@@ -27,8 +27,6 @@ impl Rule {
 // TODO: 불필요하게 정규표현식이 많이 사용된다. 정규표현식과 문자열 복사가 필요 없는 버전으로 바꿀
 // 수 있으나, 그러려면 알고리즘에 많이 손대야한다. 일단은 pySBD와 동작을 동일하게 유지하기 위해,
 // 정규표현식을 사용하는 버전으로 작성한다.
-//
-// TODO: 필요에 따라 메서드들에 must_use 붙이기
 struct Segmenter {
     roman_numerals: HashMap<&'static str, isize>,
     latin_numerals: HashMap<&'static str, isize>,
@@ -188,6 +186,7 @@ impl Segmenter {
         Ok(text)
     }
 
+    #[must_use]
     fn replace_alphabet_list(&self, text: &str, what_to_replace: &str) -> String {
         self.alphabetical_list_letters_and_periods_regex
             .replace_all(text, |m: &Captures| {
@@ -201,6 +200,7 @@ impl Segmenter {
             })
     }
 
+    #[must_use]
     fn replace_alphabet_list_parens(&self, text: &str, what_to_replace: &str) -> String {
         self.extract_alphabetical_list_letters_regex
             .replace_all(text, |m: &Captures| {
@@ -227,6 +227,7 @@ impl Segmenter {
             })
     }
 
+    #[must_use]
     fn iterate_alphabet_array<'a>(
         &self,
         text: &'a str,
@@ -291,6 +292,7 @@ impl Segmenter {
         result
     }
 
+    #[must_use]
     fn scan_lists<'a>(
         &self,
         text: &'a str,
@@ -343,6 +345,7 @@ impl Segmenter {
         Ok(result)
     }
 
+    #[must_use]
     fn add_line_breaks_for_numbered_list_with_periods<'a>(&self, text: &'a str) -> Cow<'a, str> {
         if text.contains('♨')
             && self.find_numbered_list_1.find(text).is_none()
@@ -356,6 +359,7 @@ impl Segmenter {
         Cow::Borrowed(text)
     }
 
+    #[must_use]
     fn add_line_breaks_for_numbered_list_with_parens<'a>(&self, text: &'a str) -> Cow<'a, str> {
         if text.contains('☝') && self.find_numbered_list_parens.find(text).is_none() {
             let text = self.space_between_list_items_third_rule.replace_all(text);
