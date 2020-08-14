@@ -37,8 +37,10 @@ struct Segmenter {
     numbered_list_regex_1: Regex,
     numbered_list_regex_2: Regex,
     numbered_list_parens_regex: Regex,
-}
 
+    space_between_list_items_first_rule: Rule,
+    space_between_list_items_second_rule: Rule,
+}
 
 impl Segmenter {
     fn new() -> SegmenterResult<Self> {
@@ -111,6 +113,20 @@ impl Segmenter {
 
             // Example: https://regex101.com/r/O8bLbW/1
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
+
+            // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
+            //
+            // Example:
+            //   https://rubular.com/r/Wv4qLdoPx7
+            //   https://regex101.com/r/62YBlv/1
+            space_between_list_items_first_rule: Rule::new(r"(?<=\S\S)\s(?=\S\s*\d+♨)", "\r")?,
+
+            // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
+            //
+            // Example:
+            //   https://rubular.com/r/AizHXC6HxK
+            //   https://regex101.com/r/62YBlv/2
+            space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
         })
     }
 }
@@ -320,6 +336,36 @@ f77) f
             (63, 65),
             (81, 83),
         ]
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_space_between_list_items_first_rule() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "abcd  ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item ⁃9♨ The first item ⁃10♨ The second item";
+    let output = "abcd  ⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item\r⁃9♨ The first item\r⁃10♨ The second item";
+
+    assert_eq!(
+        seg.space_between_list_items_first_rule.replace_all(input),
+        output
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_space_between_list_items_second_rule() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "1♨ The first item 2♨ The second item";
+    let output = "1♨ The first item\r2♨ The second item";
+
+    assert_eq!(
+        seg.space_between_list_items_second_rule.replace_all(input),
+        output
     );
 
     Ok(())
