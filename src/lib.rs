@@ -2,6 +2,8 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
 
+// TODO: lookaround 필요없는 regex들은
+// Rust regex crate나 Intel hyperscan으로 바꾸면 성능 올라감
 use onig::{Captures, Regex, RegexOptions, Syntax};
 
 struct Segmenter {
