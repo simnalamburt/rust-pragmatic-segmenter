@@ -1,5 +1,5 @@
-use onig::{Regex, RegexOptions, Syntax};
 use crate::SegmenterResult;
+use onig::{Regex, RegexOptions, Syntax};
 
 pub struct Rule(Regex, &'static str);
 

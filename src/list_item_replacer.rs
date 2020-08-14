@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use onig::{Captures, Regex, RegexOptions, Syntax};
 
-use crate::SegmenterResult;
 use crate::rule::Rule;
+use crate::SegmenterResult;
 
 pub struct ListItemReplacer {
     roman_numerals: HashMap<&'static str, isize>,
@@ -145,20 +145,36 @@ impl ListItemReplacer {
     #[must_use]
     pub fn add_line_break<'a>(&self, text: &'a str) -> SegmenterResult<String> {
         // format_alphabetical_lists()
-        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, false);
-        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, false);
+        let text =
+            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, false);
+        let text =
+            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, false);
 
         // format_roman_numeral_lists()
-        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, true);
-        let text = self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, true);
+        let text =
+            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, true);
+        let text =
+            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, true);
 
         // format_numbered_list_with_periods()
-        let text = self.scan_lists(&text, &self.numbered_list_regex_1, &self.numbered_list_regex_2, '♨', true)?;
+        let text = self.scan_lists(
+            &text,
+            &self.numbered_list_regex_1,
+            &self.numbered_list_regex_2,
+            '♨',
+            true,
+        )?;
         let text = self.add_line_breaks_for_numbered_list_with_periods(&text);
         let text = self.substitute_list_period_rule.replace_all(&text);
 
         // format_numbered_list_with_parens()
-        let text = self.scan_lists(&text, &self.numbered_list_parens_regex, &self.numbered_list_parens_regex, '☝', false)?;
+        let text = self.scan_lists(
+            &text,
+            &self.numbered_list_parens_regex,
+            &self.numbered_list_parens_regex,
+            '☝',
+            false,
+        )?;
         let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
         let text = self.list_marker_rule.replace_all(&text);
 
@@ -351,8 +367,8 @@ impl ListItemReplacer {
 
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
     use super::*;
+    use std::error::Error;
 
     type TestResult = Result<(), Box<dyn Error>>;
 

@@ -8,8 +8,8 @@
 // 수 있으나, 그러려면 알고리즘에 많이 손대야한다. 일단은 pySBD와 동작을 동일하게 유지하기 위해,
 // 정규표현식을 사용하는 버전으로 작성한다.
 
-mod rule;
 mod list_item_replacer;
+mod rule;
 
 use std::error::Error;
 
