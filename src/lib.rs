@@ -43,6 +43,10 @@ struct Segmenter {
 
     space_between_list_items_first_rule: Rule,
     space_between_list_items_second_rule: Rule,
+
+    find_numbered_list_parens: Regex,
+
+    space_between_list_items_third_rule: Rule,
 }
 
 impl Segmenter {
@@ -140,6 +144,18 @@ impl Segmenter {
             //   https://rubular.com/r/AizHXC6HxK
             //   https://regex101.com/r/62YBlv/2
             space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
+
+            // Refernce: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L154
+            //
+            // TODO: Add tests
+            find_numbered_list_parens: re(r"☝.+\n.+☝|☝.+\r.+☝")?,
+
+            // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
+            //
+            // Example:
+            //   https://rubular.com/r/GE5q6yID2j
+            //   https://regex101.com/r/62YBlv/3
+            space_between_list_items_third_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}☝)", "\r")?,
         })
     }
 }
@@ -378,6 +394,21 @@ fn test_space_between_list_items_second_rule() -> TestResult {
 
     assert_eq!(
         seg.space_between_list_items_second_rule.replace_all(input),
+        output
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_space_between_list_items_third_rule() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "1☝) The first item 2☝) The second item";
+    let output = "1☝) The first item\r2☝) The second item";
+
+    assert_eq!(
+        seg.space_between_list_items_third_rule.replace_all(input),
         output
     );
 
@@ -840,6 +871,32 @@ fn test_add_line_breaks_for_numbered_list_with_periods() -> TestResult {
 
     assert_eq!(
         seg.add_line_breaks_for_numbered_list_with_periods(input),
+        output
+    );
+
+    Ok(())
+}
+
+impl Segmenter {
+    fn add_line_breaks_for_numbered_list_with_parens<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        if text.contains('☝') && self.find_numbered_list_parens.find(text).is_none() {
+            let text = self.space_between_list_items_third_rule.replace_all(text);
+            return Cow::Owned(text)
+        }
+
+        Cow::Borrowed(text)
+    }
+}
+
+#[test]
+fn test_add_line_breaks_for_numbered_list_with_parens() -> TestResult {
+    let seg = Segmenter::new()?;
+
+    let input = "1☝) The first item 2☝) The second item";
+    let output = "1☝) The first item\r2☝) The second item";
+
+    assert_eq!(
+        seg.add_line_breaks_for_numbered_list_with_parens(input),
         output
     );
 
