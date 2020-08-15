@@ -110,9 +110,13 @@ impl ListItemReplacer {
             // Example: https://regex101.com/r/O8bLbW/1
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
 
+            // TODO: lookaround 없음
+            //
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L143
             find_numbered_list_1: re(r"♨.+\n.+♨|♨.+\r.+♨")?,
 
+            // TODO: lookaround 없음
+            //
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L144
             find_numbered_list_2: re(r"for\s\d{1,2}♨\s[a-z]")?,
 
@@ -130,6 +134,8 @@ impl ListItemReplacer {
             //   https://regex101.com/r/62YBlv/2
             space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
 
+            // TODO: lookaround 없음
+            //
             // Refernce: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L154
             find_numbered_list_parens: re(r"☝.+\n.+☝|☝.+\r.+☝")?,
 
@@ -140,7 +146,9 @@ impl ListItemReplacer {
             //   https://regex101.com/r/62YBlv/3
             space_between_list_items_third_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}☝)", "\r")?,
 
+            // TODO: lookaround 없음
             substitute_list_period_rule: Rule::new("♨", "∯")?,
+            // TODO: lookaround 없음
             list_marker_rule: Rule::new("☝", "")?,
         })
     }
