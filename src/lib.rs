@@ -9,6 +9,8 @@
 // 정규표현식을 사용하는 버전으로 작성한다.
 //
 // TODO: Boxed error 대신 제대로 된 에러 타입 만들기
+//
+// TODO: pySBD와 루비 구현체의 테스트케이스들 가져오기
 
 mod abbreviation_replacer;
 mod list_item_replacer;
