@@ -35,6 +35,15 @@ pub struct ListItemReplacer {
     list_marker_rule: Rule,
 }
 
+const ROMAN_NUMERALS: &[&str] = &[
+    "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "x",
+    "xi", "xii", "xiii", "xv", "xvi", "xvii", "xviii", "xix", "xx",
+];
+const LATIN_NUMERALS: &[&str] = &[
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+    "t", "u", "v", "w", "x", "y", "z",
+];
+
 impl ListItemReplacer {
     #[must_use]
     pub fn new() -> SegmenterResult<Self> {
@@ -47,15 +56,8 @@ impl ListItemReplacer {
         }
 
         Ok(ListItemReplacer {
-            roman_numerals: map_from_list(&[
-                "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii", "xiii",
-                "xiv", "x", "xi", "xii", "xiii", "xv", "xvi", "xvii", "xviii", "xix", "xx",
-            ]),
-
-            latin_numerals: map_from_list(&[
-                "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-                "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-            ]),
+            roman_numerals: map_from_list(ROMAN_NUMERALS),
+            latin_numerals: map_from_list(LATIN_NUMERALS),
 
             // Example: https://rubular.com/r/XcpaJKH0sz
             //
