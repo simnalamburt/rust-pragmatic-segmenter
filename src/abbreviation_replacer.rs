@@ -28,6 +28,8 @@ pub struct AbbreviationReplacer {
     replace_abbreviation_as_sentence_boundary: Rule,
 }
 
+// NOTE: 이 글자들은 regex 안에 들어간다. ABBREVIATIONS를 고칠경우 특수문자를 사용하지 않도록
+// 유의하고, 특수문자를 써야할경우 ABBREVIATIONS가 사용되는곳의 코드를 모두 함께 고쳐야한다.
 #[rustfmt::skip]
 const ABBREVIATIONS: &[&str] = &[
     "adj", "adm", "adv", "al", "ala", "alta", "apr", "arc", "ariz", "ark", "art", "assn", "asst",
@@ -95,6 +97,10 @@ impl AbbreviationReplacer {
                 .map(|&abbr| -> SegmenterResult<_> {
                     // NOTE: 여기에서도 escaped이 된 abbr을 써야하지만, pySBD와 동작을 유지하기위해
                     // 의도적으로 abbr를 바로 사용한다
+                    //
+                    // NOTE: 이 Regex의 match 결과물이 다른 regex의 일부로 들어가게된다. 이 regex를
+                    // 고칠경우 search_for_abbreviations_in_string() 함수에서 regex를 컴파일한 뒤
+                    // unwrap()했던 부분이 영향받을 수 있다.
                     let abbr_match = re_i(&format!(r"(?:^|\s|\r|\n){}", abbr))?;
 
                     // NOTE: abbr에 . 이외의 글자가 들어가게될 경우, 아래의 escape 로직도 함께
@@ -121,7 +127,7 @@ impl AbbreviationReplacer {
         })
     }
 
-    pub fn replace(&self, text: &str) -> SegmenterResult<String> {
+    pub fn replace(&self, text: &str) -> String {
         let text = self.possessive_abbreviation_rule.replace_all(&text);
         let mut text = self.kommanditgesellschaft_rule.replace_all(&text);
         for rule in &self.single_letter_abbreviation_rules {
@@ -133,7 +139,7 @@ impl AbbreviationReplacer {
             // 동작이 전혀 다른데, pySBD를 따라간다.
             let mut abbr_handled_text = String::new();
             for line in self.python_splitlines_keepends.splitlines_keepends(&text) {
-                abbr_handled_text += &self.search_for_abbreviations_in_string(line)?;
+                abbr_handled_text += &self.search_for_abbreviations_in_string(line);
             }
             abbr_handled_text
         };
@@ -156,13 +162,10 @@ impl AbbreviationReplacer {
             .replace_abbreviation_as_sentence_boundary
             .replace_all(&text);
 
-        Ok(text)
+        text
     }
 
-    fn search_for_abbreviations_in_string<'a>(
-        &self,
-        text: &'a str,
-    ) -> SegmenterResult<Cow<'a, str>> {
+    fn search_for_abbreviations_in_string<'a>(&self, text: &'a str) -> Cow<'a, str> {
         let lowered = text.to_lowercase();
 
         let mut text = Cow::Borrowed(text);
@@ -213,16 +216,21 @@ impl AbbreviationReplacer {
 
                     // prepend a space to avoid needing another regex for start of string
                     let txt = format!(" {}", text);
+
                     // NOTE: Regex compile을 string match 도중에 하면 성능에 좋지 않지만, abbr이
-                    // 동적이어서 어쩔 수 없다.
-                    let txt = re(&regex)?.replace_all(&txt, "∯");
+                    // 동적이어서 어쩔 수 없이 여기서 compile을 수행한다.
+                    //
+                    // NOTE: 현재 구현상 abbr은 무조건 ABBREVIATIONS의 일부이기때문에 여기서
+                    // unwrap()해도 안전하다. 그러나 구현이 바뀔경우 조치가 필요하다.
+                    let txt = re(&regex).unwrap().replace_all(&txt, "∯");
+
                     // remove the prepended space
                     text = Cow::Owned(txt[1..].to_string());
                 }
             }
         }
 
-        Ok(text)
+        text
     }
 }
 

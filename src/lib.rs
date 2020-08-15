@@ -16,6 +16,7 @@ mod list_item_replacer;
 mod rule;
 mod util;
 
+use std::borrow::Cow;
 use std::error::Error;
 
 use abbreviation_replacer::AbbreviationReplacer;
@@ -36,13 +37,12 @@ impl Segmenter {
         })
     }
 
-    pub fn segment(&self, text: &str) -> SegmenterResult<()> {
+    pub fn segment<'a>(&self, text: &'a str) -> Cow<'a, str> {
         if text.is_empty() {
-            // TODO: 구현하기
-            unimplemented!();
+            return Cow::Borrowed(text);
         }
-        let text = self.list_item_replacer.add_line_break(text)?;
-        let _text = self.abbreviation_replacer.replace(&text);
+        let text = self.list_item_replacer.add_line_break(text);
+        let text = self.abbreviation_replacer.replace(&text);
 
         // TODO: 구현하기
         unimplemented!();

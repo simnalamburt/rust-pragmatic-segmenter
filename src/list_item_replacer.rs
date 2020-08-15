@@ -126,7 +126,7 @@ impl ListItemReplacer {
     }
 
     #[must_use]
-    pub fn add_line_break<'a>(&self, text: &'a str) -> SegmenterResult<String> {
+    pub fn add_line_break<'a>(&self, text: &'a str) -> String {
         // format_alphabetical_lists()
         let text = self.iterate_alphabet_array(&text, false, false);
         let text = self.iterate_alphabet_array(&text, true, false);
@@ -142,7 +142,7 @@ impl ListItemReplacer {
             &self.numbered_list_regex_2,
             '♨',
             true,
-        )?;
+        );
         let text = self.add_line_breaks_for_numbered_list_with_periods(&text);
         let text = text.replace("♨", "∯"); // SubstituteListPeriodRule
 
@@ -153,11 +153,11 @@ impl ListItemReplacer {
             &self.numbered_list_parens_regex,
             '☝',
             false,
-        )?;
+        );
         let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
         let text = text.replace("☝", ""); // ListMarkerRule
 
-        Ok(text)
+        text
     }
 
     #[must_use]
@@ -279,11 +279,13 @@ impl ListItemReplacer {
         regex2: &OnigRegex,
         replacement: char,
         strip: bool,
-    ) -> SegmenterResult<Cow<'a, str>> {
-        let list_array: Vec<_> = regex1
+    ) -> Cow<'a, str> {
+        // 여기에서 int parse error가 발생하면 regex가 틀렸다는 뜻임.
+        // regex가 올바를경우 parse error가 절대 생기지 않으므로, unwrap 한다.
+        let list_array: Vec<i32> = regex1
             .find_iter(text)
-            .map(|r| text[r.0..r.1].trim_start().parse::<i32>())
-            .collect::<Result<_, _>>()?;
+            .map(|r| text[r.0..r.1].trim_start().parse().unwrap())
+            .collect();
 
         let mut result = Cow::Borrowed(text);
         for (i, &each) in list_array.iter().enumerate() {
@@ -321,7 +323,7 @@ impl ListItemReplacer {
             }))
         }
 
-        Ok(result)
+        result
     }
 
     #[must_use]
@@ -816,7 +818,7 @@ Dont match below
                 &list.numbered_list_regex_2,
                 '♨',
                 true
-            )?,
+            ),
             Cow::<str>::Borrowed(output)
         );
 
@@ -855,7 +857,7 @@ f77) f
                 &list.numbered_list_parens_regex,
                 '☝',
                 false
-            )?,
+            ),
             Cow::<str>::Borrowed(output)
         );
 
