@@ -15,6 +15,7 @@
 mod abbreviation_replacer;
 mod list_item_replacer;
 mod rule;
+mod util;
 
 use std::error::Error;
 

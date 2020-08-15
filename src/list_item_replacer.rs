@@ -1,9 +1,10 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use onig::{Captures, Regex, RegexOptions, Syntax};
+use onig::{Captures, Regex};
 
 use crate::rule::Rule;
+use crate::util::{re, re_i};
 use crate::SegmenterResult;
 
 pub struct ListItemReplacer {
@@ -43,24 +44,6 @@ impl ListItemReplacer {
                 .enumerate()
                 .map(|(idx, &s)| (s, idx as isize))
                 .collect()
-        }
-
-        #[must_use]
-        fn re(regex: &str) -> SegmenterResult<Regex> {
-            Ok(Regex::with_options(
-                regex,
-                RegexOptions::REGEX_OPTION_NONE,
-                Syntax::ruby(),
-            )?)
-        }
-
-        #[must_use]
-        fn re_i(regex: &str) -> SegmenterResult<Regex> {
-            Ok(Regex::with_options(
-                regex,
-                RegexOptions::REGEX_OPTION_IGNORECASE,
-                Syntax::ruby(),
-            )?)
         }
 
         Ok(ListItemReplacer {
