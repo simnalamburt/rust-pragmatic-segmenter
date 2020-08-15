@@ -23,7 +23,6 @@ pub struct AbbreviationReplacer {
     number_abbreviations: HashSet<&'static str>,
 
     multi_period_abbreviation_regex: Regex,
-    multi_period_abbreviation_replace_period: Rule,
 
     replace_abbreviation_as_sentence_boundary: Rule,
 }
@@ -118,8 +117,6 @@ impl AbbreviationReplacer {
             // Example: https://rubular.com/r/xDkpFZ0EgH
             multi_period_abbreviation_regex: re_i(r"\b[a-z](?:\.[a-z])+[.]")?,
 
-            multi_period_abbreviation_replace_period: Rule::new(r"\.", "∯")?,
-
             replace_abbreviation_as_sentence_boundary: Rule::new(
                 r"(U∯S|U\.S|U∯K|E∯U|E\.U|U∯S∯A|U\.S\.A|I|i.v|I.V)∯((?=\sA\s)|(?=\sBeing\s)|(?=\sDid\s)|(?=\sFor\s)|(?=\sHe\s)|(?=\sHow\s)|(?=\sHowever\s)|(?=\sI\s)|(?=\sIn\s)|(?=\sIt\s)|(?=\sMillions\s)|(?=\sMore\s)|(?=\sShe\s)|(?=\sThat\s)|(?=\sThe\s)|(?=\sThere\s)|(?=\sThey\s)|(?=\sWe\s)|(?=\sWhat\s)|(?=\sWhen\s)|(?=\sWhere\s)|(?=\sWho\s)|(?=\sWhy\s))",
                 r"\1.",
@@ -149,8 +146,7 @@ impl AbbreviationReplacer {
             .multi_period_abbreviation_regex
             .replace_all(&text, |c: &Captures| {
                 let mat = c.at(0).unwrap(); // Must exists
-                self.multi_period_abbreviation_replace_period
-                    .replace_all(mat)
+                mat.replace('.', "∯")
             });
 
         for rule in &self.am_pm_rules {
