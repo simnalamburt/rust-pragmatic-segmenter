@@ -1,5 +1,4 @@
-// TODO: lookaround 필요없는 regex들은
-// Rust regex crate나 Intel hyperscan으로 바꾸면 성능 올라감
+// TODO: Intel Hyperscan 도입한 뒤 성능 개선 벤치마크하기
 //
 // TODO: list_item_replacer에 pySBD의 구현 실수나, pySBD가 루비 버전 pragmatic segmenter와 다르게
 // 구현한 부분이 다수 발견됨. pySBD와 동작을 맞춘 뒤, diverge 할 때 고치기

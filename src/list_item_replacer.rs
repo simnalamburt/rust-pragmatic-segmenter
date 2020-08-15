@@ -1,7 +1,8 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-use onig::{Captures, Regex};
+use onig::{Captures, Regex as OnigRegex};
+use regex::Regex;
 
 use crate::rule::Rule;
 use crate::util::{re, re_i};
@@ -11,15 +12,15 @@ pub struct ListItemReplacer {
     roman_numerals: HashMap<&'static str, isize>,
     latin_numerals: HashMap<&'static str, isize>,
 
-    alphabetical_list_with_periods: Regex,
-    alphabetical_list_with_parens: Regex,
+    alphabetical_list_with_periods: OnigRegex,
+    alphabetical_list_with_parens: OnigRegex,
 
-    alphabetical_list_letters_and_periods_regex: Regex,
-    extract_alphabetical_list_letters_regex: Regex,
+    alphabetical_list_letters_and_periods_regex: OnigRegex,
+    extract_alphabetical_list_letters_regex: OnigRegex,
 
-    numbered_list_regex_1: Regex,
-    numbered_list_regex_2: Regex,
-    numbered_list_parens_regex: Regex,
+    numbered_list_regex_1: OnigRegex,
+    numbered_list_regex_2: OnigRegex,
+    numbered_list_parens_regex: OnigRegex,
 
     find_numbered_list_1: Regex,
     find_numbered_list_2: Regex,
@@ -30,9 +31,6 @@ pub struct ListItemReplacer {
     find_numbered_list_parens: Regex,
 
     space_between_list_items_third_rule: Rule,
-
-    substitute_list_period_rule: Rule,
-    list_marker_rule: Rule,
 }
 
 const ROMAN_NUMERALS: &[&str] = &[
@@ -95,15 +93,11 @@ impl ListItemReplacer {
             // Example: https://regex101.com/r/O8bLbW/1
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
 
-            // TODO: lookaround 없음
-            //
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L143
-            find_numbered_list_1: re(r"♨.+\n.+♨|♨.+\r.+♨")?,
+            find_numbered_list_1: Regex::new(r"♨.+\n.+♨|♨.+\r.+♨")?,
 
-            // TODO: lookaround 없음
-            //
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L144
-            find_numbered_list_2: re(r"for\s\d{1,2}♨\s[a-z]")?,
+            find_numbered_list_2: Regex::new(r"for\s\d{1,2}♨\s[a-z]")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
             //
@@ -119,10 +113,8 @@ impl ListItemReplacer {
             //   https://regex101.com/r/62YBlv/2
             space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
 
-            // TODO: lookaround 없음
-            //
             // Refernce: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L154
-            find_numbered_list_parens: re(r"☝.+\n.+☝|☝.+\r.+☝")?,
+            find_numbered_list_parens: Regex::new(r"☝.+\n.+☝|☝.+\r.+☝")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
             //
@@ -130,27 +122,18 @@ impl ListItemReplacer {
             //   https://rubular.com/r/GE5q6yID2j
             //   https://regex101.com/r/62YBlv/3
             space_between_list_items_third_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}☝)", "\r")?,
-
-            // TODO: lookaround 없음
-            substitute_list_period_rule: Rule::new("♨", "∯")?,
-            // TODO: lookaround 없음
-            list_marker_rule: Rule::new("☝", "")?,
         })
     }
 
     #[must_use]
     pub fn add_line_break<'a>(&self, text: &'a str) -> SegmenterResult<String> {
         // format_alphabetical_lists()
-        let text =
-            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, false);
-        let text =
-            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, false);
+        let text = self.iterate_alphabet_array(&text, false, false);
+        let text = self.iterate_alphabet_array(&text, true, false);
 
         // format_roman_numeral_lists()
-        let text =
-            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_periods, false, true);
-        let text =
-            self.iterate_alphabet_array(&text, &self.alphabetical_list_with_parens, true, true);
+        let text = self.iterate_alphabet_array(&text, false, true);
+        let text = self.iterate_alphabet_array(&text, true, true);
 
         // format_numbered_list_with_periods()
         let text = self.scan_lists(
@@ -161,7 +144,7 @@ impl ListItemReplacer {
             true,
         )?;
         let text = self.add_line_breaks_for_numbered_list_with_periods(&text);
-        let text = self.substitute_list_period_rule.replace_all(&text);
+        let text = text.replace("♨", "∯"); // SubstituteListPeriodRule
 
         // format_numbered_list_with_parens()
         let text = self.scan_lists(
@@ -172,7 +155,7 @@ impl ListItemReplacer {
             false,
         )?;
         let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
-        let text = self.list_marker_rule.replace_all(&text);
+        let text = text.replace("☝", ""); // ListMarkerRule
 
         Ok(text)
     }
@@ -222,10 +205,15 @@ impl ListItemReplacer {
     fn iterate_alphabet_array<'a>(
         &self,
         text: &'a str,
-        regex: &Regex,
         parens: bool,
         use_roman_numeral: bool,
     ) -> Cow<'a, str> {
+        let regex = if parens {
+            &self.alphabetical_list_with_parens
+        } else {
+            &self.alphabetical_list_with_periods
+        };
+
         // NOTE: 루비 코드(pragmatic segmenter)에선 여기서 검사하기 전에 downcase를 함, pySBD에선
         // 안함. Downcase를 하는것이 맞지만, 이 프로젝트는 일단 pySBD의 동작을 따르겠다.
         //
@@ -287,8 +275,8 @@ impl ListItemReplacer {
     fn scan_lists<'a>(
         &self,
         text: &'a str,
-        regex1: &Regex,
-        regex2: &Regex,
+        regex1: &OnigRegex,
+        regex2: &OnigRegex,
         replacement: char,
         strip: bool,
     ) -> SegmenterResult<Cow<'a, str>> {
@@ -651,10 +639,7 @@ f77) f
         // pySBD와 동작을 맞추는것이 목표이기때문에 버그도 그대로 유지한다.
 
         let list = ListItemReplacer::new()?;
-        assert_eq!(
-            list.iterate_alphabet_array("i. Hi", &list.alphabetical_list_with_periods, false, true),
-            "i. Hi"
-        );
+        assert_eq!(list.iterate_alphabet_array("i. Hi", false, true), "i. Hi");
 
         let input = "\
 Replace
@@ -682,10 +667,7 @@ A. Vestibulum
 B. Proin
 C. Maecenas
 ";
-        assert_eq!(
-            list.iterate_alphabet_array(input, &list.alphabetical_list_with_periods, false, false),
-            output,
-        );
+        assert_eq!(list.iterate_alphabet_array(input, false, false), output,);
 
         let input = "\
 Do
@@ -729,10 +711,7 @@ C) Maecenas
 (B) Proin
 (C) Maecenas
 ";
-        assert_eq!(
-            list.iterate_alphabet_array(input, &list.alphabetical_list_with_parens, true, false),
-            output,
-        );
+        assert_eq!(list.iterate_alphabet_array(input, true, false), output,);
 
         let input = "\
 NOP
@@ -745,10 +724,7 @@ I. Suspendisse
 II. Maecenas
 III. Nam
 ";
-        assert_eq!(
-            list.iterate_alphabet_array(input, &list.alphabetical_list_with_periods, false, true),
-            input,
-        );
+        assert_eq!(list.iterate_alphabet_array(input, false, true), input,);
 
         let input = "\
 Do
@@ -792,10 +768,7 @@ III) Nam
 (II) Maecenas
 (III) Nam
 ";
-        assert_eq!(
-            list.iterate_alphabet_array(input, &list.alphabetical_list_with_parens, true, true),
-            output,
-        );
+        assert_eq!(list.iterate_alphabet_array(input, true, true), output,);
 
         Ok(())
     }
