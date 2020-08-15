@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 onig = "6"
+aho-corasick = "0.7"
+unic-ucd-case = "0.9.0"

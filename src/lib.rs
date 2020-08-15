@@ -33,7 +33,7 @@ impl Segmenter {
     pub fn new() -> SegmenterResult<Self> {
         Ok(Segmenter {
             list_item_replacer: ListItemReplacer::new()?,
-            abbreviation_replacer: AbbreviationReplacer::new(),
+            abbreviation_replacer: AbbreviationReplacer::new()?,
         })
     }
 
