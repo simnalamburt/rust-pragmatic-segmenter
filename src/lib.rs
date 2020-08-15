@@ -19,10 +19,10 @@ pub struct Segmenter {
     list_item_replacer: ListItemReplacer,
     abbreviation_replacer: AbbreviationReplacer,
 
-    number_rules: Vec<Rule>,
+    number_rules: [Rule; 5],
     continuous_punctuation_regex: Regex,
     numbered_reference: Rule,
-    misc_rules: Vec<Rule>,
+    misc_rules: [Rule; 3],
 }
 
 impl Segmenter {
@@ -31,7 +31,7 @@ impl Segmenter {
             list_item_replacer: ListItemReplacer::new()?,
             abbreviation_replacer: AbbreviationReplacer::new()?,
 
-            number_rules: vec![
+            number_rules: [
                 // PeriodBeforeNumberRule
                 // Example: https://rubular.com/r/oNyxBOqbyy
                 Rule::new(r"\.(?=\d)", "∯")?,
@@ -58,7 +58,7 @@ impl Segmenter {
                 r"∯\2\r\7",
             )?,
 
-            misc_rules: vec![
+            misc_rules: [
                 // English.Abbreviation.WithMultiplePeriodsAndEmailRule,
                 //
                 // NOTE: pySBD와 루비 구현체가 다른 정규표현식을 쓴다. pySBD의 동작을 따라간다.

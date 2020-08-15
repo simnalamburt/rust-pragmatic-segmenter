@@ -13,8 +13,8 @@ use crate::SegmenterResult;
 pub struct AbbreviationReplacer {
     possessive_abbreviation_rule: Rule,
     kommanditgesellschaft_rule: Rule,
-    single_letter_abbreviation_rules: Vec<Rule>,
-    am_pm_rules: Vec<Rule>,
+    single_letter_abbreviation_rules: [Rule; 2],
+    am_pm_rules: [Rule; 4],
 
     python_splitlines_keepends: PythonSplitLines,
 
@@ -65,7 +65,7 @@ impl AbbreviationReplacer {
             // Example: https://rubular.com/r/NEv265G2X2
             kommanditgesellschaft_rule: Rule::new(r"(?<=Co)\.(?=\sKG)", "∯")?,
 
-            single_letter_abbreviation_rules: vec![
+            single_letter_abbreviation_rules: [
                 // SingleUpperCaseLetterAtStartOfLineRule
                 // Example: https://rubular.com/r/e3H6kwnr6H
                 Rule::new(r"(?<=^[A-Z])\.(?=\s)", "∯")?,
@@ -74,7 +74,7 @@ impl AbbreviationReplacer {
                 Rule::new(r"(?<=\s[A-Z])\.(?=,?\s)", "∯")?,
             ],
 
-            am_pm_rules: vec![
+            am_pm_rules: [
                 // UpperCasePmRule
                 // Example: https://rubular.com/r/Vnx3m4Spc8
                 Rule::new(r"(?<= P∯M)∯(?=\s[A-Z])", ".")?,
