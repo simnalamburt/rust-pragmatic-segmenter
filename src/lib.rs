@@ -56,6 +56,7 @@ pub struct Segmenter {
     sentence_boundary_regex: Regex,
     post_process_regex: Regex,
     quotation_at_end_of_sentence_regex: Regex,
+    split_space_quotation_at_end_of_sentence_regex: Regex,
 }
 
 impl Segmenter {
@@ -210,6 +211,10 @@ impl Segmenter {
             post_process_regex: re(r"\A[a-zA-Z]*\Z")?,
             // Example: https://rubular.com/r/NqCqv372Ix
             quotation_at_end_of_sentence_regex: re(r#"[!?\.-][\"\'“”]\s{1}[A-Z]"#)?,
+            // Example: https://rubular.com/r/JMjlZHAT4g
+            split_space_quotation_at_end_of_sentence_regex: re(
+                r#"(?<=[!?\.-][\"\'“”])\s{1}(?=[A-Z])"#,
+            )?,
         })
     }
 
@@ -389,7 +394,7 @@ impl Segmenter {
                     .find(&sent)
                     .is_some()
                 {
-                    self.quotation_at_end_of_sentence_regex
+                    self.split_space_quotation_at_end_of_sentence_regex
                         .split(&sent)
                         .map(|s| s.to_string())
                         .collect()
