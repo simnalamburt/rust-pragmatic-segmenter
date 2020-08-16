@@ -208,10 +208,10 @@ impl Segmenter {
         })
     }
 
-    pub fn segment<'a>(&'a self, text: &str) -> impl Iterator<Item = String> + 'a {
+    pub fn segment<'a>(&'a self, original_input: &'a str) -> impl Iterator<Item = &'a str> {
         // NOTE: 루비 버전에는 이런 처리가 없으나, pySBD 3.1.0에 이 처리가 들어갔다. pySBD와 동작을
         // 맞추기위해 동일하게 처리해준다.
-        let text = text.replace('\n', "\r");
+        let text = original_input.replace('\n', "\r");
 
         let text = self.list_item_replacer.add_line_break(&text);
 
@@ -254,6 +254,8 @@ impl Segmenter {
                 let mat = self.parens_between_double_quotes_1.replace_all(&mat);
                 mat
             });
+
+        let mut prior_start_char_idx = 0;
 
         // TODO: flat_map() 에서 임시 Vec, String 할당 줄이기
         text.split('\r')
@@ -388,6 +390,29 @@ impl Segmenter {
                 }
             })
             .map(|sent| sent.replace(r"&⎋&", "'"))
+            // NOTE: pySBD에만 이하의 처리가 존재하고, 원본 루비코드에는 이런 동작이 없다. 일단
+            // 동작을 맞추기 위해 동일한 처리를 해주지만, 아래 코드때문에 성능손실이 크다.
+            .flat_map(move |sent| -> Vec<_> {
+                // since SENTENCE_BOUNDARY_REGEX doesnt account
+                // for trailing whitespaces \s* & is used as suffix
+                // to keep non-destructive text after segments joins
+
+                // NOTE: escape 한 뒤 compile했기 때문에, 실패의 여지가 없다.
+                let re = regex::Regex::new(&format!(r"{}\s*", regex::escape(&sent))).unwrap();
+                re.find_iter(original_input).filter_map(|mat| {
+                    let match_str = mat.as_str();
+                    let match_start_idx = mat.start();
+                    if match_start_idx >= prior_start_char_idx {
+                        prior_start_char_idx = match_start_idx;
+                        Some(match_str)
+                        // making sure if curren sentence and its span
+                        // is either first sentence along with its char spans
+                        // or current sent spans adjacent to prior sentence spans
+                    } else {
+                        None
+                    }
+                }).collect()
+            })
     }
 
     fn replace_punctuation(&self, is_match_type_single: bool) -> impl Fn(&Captures) -> String + '_ {
