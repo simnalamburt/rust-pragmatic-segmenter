@@ -8,6 +8,20 @@ use pragmatic_segmenter::Segmenter;
 type TestResult = Result<(), Box<dyn Error>>;
 
 #[test]
+fn test_punctuation() -> TestResult {
+    let segmenter = Segmenter::new()?;
+
+    assert_eq!(
+        segmenter
+            .segment("U.S. army at www.stanler.com")
+            .collect::<Vec<_>>(),
+        vec!["U.S. army at www.stanler.com"],
+    );
+
+    Ok(())
+}
+
+#[test]
 fn test_all() -> TestResult {
     let segmenter = Segmenter::new()?;
 
