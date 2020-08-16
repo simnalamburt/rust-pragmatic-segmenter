@@ -360,3 +360,8 @@ fn test_python_isupper() {
     assert!(!python_isupper("가나다a"));
     assert!(python_isupper("가나다A"));
 }
+
+#[test]
+fn regex_should_be_compiled() {
+    assert!(AbbreviationReplacer::new().is_ok())
+}
