@@ -22,6 +22,30 @@ fn test_punctuation() -> TestResult {
 }
 
 #[test]
+fn test_character_boundary() -> TestResult {
+    let segmenter = Segmenter::new()?;
+    let input = "U.S. and NYSE’s U.S.";
+
+    let actual: Vec<_> = segmenter.segment(input).collect();
+    let expected = vec!["U.S. and NYSE’s U.S."];
+
+    assert_eq!(actual, expected);
+    Ok(())
+}
+
+#[test]
+fn test_parens() -> TestResult {
+    let segmenter = Segmenter::new()?;
+    let input = "AA Inc. is including";
+
+    let actual: Vec<_> = segmenter.segment(input).collect();
+    let expected = vec!["AA Inc. is including"];
+
+    assert_eq!(actual, expected);
+    Ok(())
+}
+
+#[test]
 fn test_all() -> TestResult {
     let segmenter = Segmenter::new()?;
 
