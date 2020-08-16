@@ -3,6 +3,7 @@ mod list_item_replacer;
 mod rule;
 mod util;
 
+use std::borrow::Cow;
 use std::error::Error;
 use std::iter::Iterator;
 
@@ -24,7 +25,8 @@ pub struct Segmenter {
     number_rules: [Rule; 5],
     continuous_punctuation_regex: Regex,
     numbered_reference: Rule,
-    misc_rules: [Rule; 3],
+    abbreviation_with_multiple_periods_and_email_regex: regex::Regex,
+    misc_rules: [Rule; 2],
 
     parens_between_double_quotes_regex: Regex,
     parens_between_double_quotes_0: Rule,
@@ -89,13 +91,16 @@ impl Segmenter {
                 r"∯\2\r\7",
             )?,
 
+            // English.Abbreviation.WithMultiplePeriodsAndEmailRule,
+            //
+            // NOTE: pySBD와 루비 구현체가 다른 정규표현식을 쓴다. pySBD의 동작을 따라간다.
+            //
+            // Example: https://rubular.com/r/EUbZCNfgei
+            abbreviation_with_multiple_periods_and_email_regex: regex::Regex::new(
+                r"([a-zA-Z0-9_])(?:\.)([a-zA-Z0-9_])",
+            )?,
+
             misc_rules: [
-                // English.Abbreviation.WithMultiplePeriodsAndEmailRule,
-                //
-                // NOTE: pySBD와 루비 구현체가 다른 정규표현식을 쓴다. pySBD의 동작을 따라간다.
-                //
-                // Example: https://rubular.com/r/EUbZCNfgei
-                Rule::new(r"([a-zA-Z0-9_])(\.)([a-zA-Z0-9_])", r"\1∮\3")?,
                 // English.GeoLocationRule,
                 Rule::new(r"(?<=[a-zA-z]°)\.(?=\s*\d+)", "∯")?,
                 // English.FileFormatRule,
@@ -235,10 +240,13 @@ impl Segmenter {
         //
         // Reference:
         //   https://github.com/diasks2/pragmatic_segmenter/commit/d9ec1a35
-        let mut text = self.numbered_reference.replace_all(&text);
+        let text = self.numbered_reference.replace_all(&text);
 
+        let mut text = self
+            .abbreviation_with_multiple_periods_and_email_regex
+            .replace_all(&text, "$1∮$2");
         for rule in &self.misc_rules {
-            text = rule.replace_all(&text);
+            text = Cow::Owned(rule.replace_all(&text));
         }
 
         //
