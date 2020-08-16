@@ -407,19 +407,21 @@ impl Segmenter {
 
                 // NOTE: escape 한 뒤 compile했기 때문에, 실패의 여지가 없다.
                 let re = regex::Regex::new(&format!(r"{}\s*", regex::escape(&sent))).unwrap();
-                re.find_iter(original_input).filter_map(|mat| {
-                    let match_str = mat.as_str();
-                    let match_start_idx = mat.start();
-                    if match_start_idx >= prior_start_char_idx {
-                        prior_start_char_idx = match_start_idx;
-                        Some(match_str)
+                re.find_iter(original_input)
+                    .filter_map(|mat| {
+                        let match_str = mat.as_str();
+                        let match_start_idx = mat.start();
+                        if match_start_idx >= prior_start_char_idx {
+                            prior_start_char_idx = match_start_idx;
+                            Some(match_str)
                         // making sure if curren sentence and its span
                         // is either first sentence along with its char spans
                         // or current sent spans adjacent to prior sentence spans
-                    } else {
-                        None
-                    }
-                }).collect()
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
             })
     }
 
