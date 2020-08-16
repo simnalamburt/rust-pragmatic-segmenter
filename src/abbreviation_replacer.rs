@@ -361,7 +361,39 @@ fn test_python_isupper() {
     assert!(python_isupper("가나다A"));
 }
 
-#[test]
-fn regex_should_be_compiled() {
-    assert!(AbbreviationReplacer::new().is_ok())
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::error::Error;
+
+    type TestResult = Result<(), Box<dyn Error>>;
+
+    #[test]
+    fn regex_should_be_compiled() {
+        assert!(AbbreviationReplacer::new().is_ok())
+    }
+
+    #[test]
+    fn test_abbr_replace() -> TestResult {
+        let rep = AbbreviationReplacer::new()?;
+
+        assert_eq!(
+            rep.replace("Humana Inc. is including"),
+            "Humana Inc∯ is including"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_search_for_abbreviations_in_string() -> TestResult {
+        let rep = AbbreviationReplacer::new()?;
+
+        assert_eq!(
+            rep.search_for_abbreviations_in_string("Humana Inc. is including"),
+            "Humana Inc∯ is including"
+        );
+
+        Ok(())
+    }
 }
