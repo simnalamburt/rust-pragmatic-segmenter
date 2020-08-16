@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::iter::Iterator;
 
 use aho_corasick::{AhoCorasick, AhoCorasickBuilder, FindIter, MatchKind};
@@ -175,6 +175,7 @@ impl AbbreviationReplacer {
             }
             let char_array: Vec<_> = next_word_start_regex.find_iter(&text).collect();
 
+            let mut replace_locations = BTreeSet::new();
             for (ind, range) in abbrev_match.into_iter().enumerate() {
                 let abbr = &text[range.0..range.1].trim();
 
@@ -211,18 +212,28 @@ impl AbbreviationReplacer {
                     };
 
                     // prepend a space to avoid needing another regex for start of string
-                    let txt = format!(" {}", text);
+                    let prepended_text = format!(" {}", text);
 
                     // NOTE: Regex compile을 string match 도중에 하면 성능에 좋지 않지만, abbr이
                     // 동적이어서 어쩔 수 없이 여기서 compile을 수행한다.
                     //
                     // NOTE: 현재 구현상 abbr은 무조건 ABBREVIATIONS의 일부이기때문에 여기서
                     // unwrap()해도 안전하다. 그러나 구현이 바뀔경우 조치가 필요하다.
-                    let txt = re(&regex).unwrap().replace_all(&txt, "∯");
-
-                    // remove the prepended space
-                    text = Cow::Owned(txt[1..].to_string());
+                    replace_locations.extend(re(&regex).unwrap().find_iter(&prepended_text).map(
+                        // 맨 앞에 스페이스바를 붙였기때문에 1 뺴야함
+                        |r| r.0 - 1,
+                    ));
+                    // TODO: replace_locations에 같은 인덱스를 중복으로 추가하기때문에, 비효율이
+                    // 발생함. 최적화하기.
                 }
+            }
+
+            if !replace_locations.is_empty() {
+                let mut owned = text.into_owned();
+                for loc in replace_locations.into_iter().rev() {
+                    owned.replace_range(loc..(loc + 1), "∯");
+                }
+                text = Cow::Owned(owned);
             }
         }
 
