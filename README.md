@@ -1,5 +1,6 @@
 Pragmatic Segmenter
 ========
+Rust port of pySBD v3.1.0.
 
 ### How to build
 ```bash
