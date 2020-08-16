@@ -291,9 +291,10 @@ impl ListItemReplacer {
 
         let mut result = Cow::Borrowed(text);
         for (i, &each) in list_array.iter().enumerate() {
+            let i_minus_1 = if i == 0 { None } else { list_array.get(i - 1) };
             if !(Some(&(each + 1)) == list_array.get(i + 1)
-                || Some(&(each - 1)) == list_array.get(i - 1)
-                || (each == 0 && list_array.get(i - 1) == Some(&9))
+                || Some(&(each - 1)) == i_minus_1
+                || (each == 0 && i_minus_1 == Some(&9))
                 || (each == 9 && list_array.get(i + 1) == Some(&0)))
             {
                 continue;
