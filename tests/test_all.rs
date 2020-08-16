@@ -46,6 +46,18 @@ fn test_parens() -> TestResult {
 }
 
 #[test]
+fn test_quotes() -> TestResult {
+    let segmenter = Segmenter::new()?;
+
+    let input = r#"Our "business." Walgreens"#;
+    let actual: Vec<_> = segmenter.segment(input).collect();
+    let expected = vec![r#"Our "business." "#, "Walgreens"];
+
+    assert_eq!(actual, expected);
+    Ok(())
+}
+
+#[test]
 fn test_all() -> TestResult {
     let segmenter = Segmenter::new()?;
 
