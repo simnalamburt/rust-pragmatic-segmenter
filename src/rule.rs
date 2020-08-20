@@ -1,10 +1,9 @@
-use crate::SegmenterResult;
-use onig::{Regex, RegexOptions, Syntax};
+use onig::{Error, Regex, RegexOptions, Syntax};
 
 pub struct Rule(Regex, &'static str);
 
 impl Rule {
-    pub fn new(regex: &str, replace: &'static str) -> SegmenterResult<Self> {
+    pub fn new(regex: &str, replace: &'static str) -> Result<Self, Error> {
         Ok(Rule(
             Regex::with_options(regex, RegexOptions::REGEX_OPTION_NONE, Syntax::ruby())?,
             replace,
