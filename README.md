@@ -1,11 +1,14 @@
 rust-pragmatic-segmenter
 ========
-Rust port of pySBD v3.1.0.
+Rust port of [pySBD] v3.1.0.
 
 ### How to build
 ```bash
 sudo apt install -y libclang-dev
 cargo build
+
+# Run benchmark
+cargo run --release --example benchmark
 ```
 
 ### TODOs
@@ -26,6 +29,8 @@ cargo build
 *rust-pragmatic-segmenter* is primarily distributed under the terms of both the
 [Apache License (Version 2.0)] and the [MIT license]. See [COPYRIGHT] for
 details.
+
+[pySBD]: https://github.com/nipunsadvilkar/pySBD
 
 [MIT license]: LICENSE-MIT
 [Apache License (Version 2.0)]: LICENSE-APACHE

@@ -1,8 +1,8 @@
 use std::error::Error;
+use std::fmt::{self, Display, Formatter};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 
-use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use serde_json::from_str;
 use xz2::read::XzDecoder;
@@ -10,6 +10,24 @@ use xz2::read::XzDecoder;
 use pragmatic_segmenter::Segmenter;
 
 type TestResult = Result<(), Box<dyn Error>>;
+
+#[derive(Debug)]
+struct DifferentFromPySBD {
+    expected: Vec<String>,
+    actual: Vec<String>,
+}
+
+impl Display for DifferentFromPySBD {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "DifferntFromPySBD {{ pySBD's result is {:#?}, but ours is {:#?} }}",
+            self.expected, self.actual
+        )
+    }
+}
+
+impl Error for DifferentFromPySBD {}
 
 #[test]
 fn test_all() -> TestResult {
@@ -27,35 +45,21 @@ fn test_all() -> TestResult {
             Ok((input, output))
         })
         .collect::<io::Result<_>>()?;
-    let count = dataset.len();
-    let bar = ProgressBar::new(count as u64);
-    bar.set_draw_delta(100);
-    bar.set_style(ProgressStyle::default_bar().template("
-{percent}% {wide_bar} {pos:>5}/{len}
-{elapsed} passed, Currrent speed: {per_sec}, {eta} left
-",
-    ));
 
-    let good = dataset
+    dataset
         .par_iter()
-        .map(|(input, expected)| {
-            bar.inc(1);
+        .map(|(input, expected)| -> Result<(), _> {
             let actual: Vec<_> = segmenter.segment(&input).collect();
-            actual == *expected
+            if actual == *expected {
+                Ok(())
+            } else {
+                Err(DifferentFromPySBD {
+                    expected: expected.clone(),
+                    actual: actual.into_iter().map(|s| s.to_string()).collect(),
+                })
+            }
         })
-        .filter(|&b| b)
-        .count();
-    bar.finish();
-
-    assert_eq!(
-        count,
-        good,
-        "Total={}, Good={}, Bad={}, ({:.3}%)",
-        count,
-        good,
-        count - good,
-        good as f64 / count as f64 * 100.0
-    );
+        .collect::<Result<(), _>>()?;
 
     Ok(())
 }
