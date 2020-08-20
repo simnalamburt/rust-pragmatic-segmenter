@@ -12,8 +12,8 @@ use pragmatic_segmenter::Segmenter;
 fn main() -> Result<(), Box<dyn Error>> {
     let segmenter = Segmenter::new()?;
 
-    let inputs = BufReader::new(XzDecoder::new(File::open("tests/fixtures/inputs.xz")?));
-    let outputs = BufReader::new(XzDecoder::new(File::open("tests/fixtures/outputs.xz")?));
+    let inputs = BufReader::new(XzDecoder::new(File::open("tests/test_huge/inputs.xz")?));
+    let outputs = BufReader::new(XzDecoder::new(File::open("tests/test_huge/outputs.xz")?));
     let dataset: Vec<_> = inputs
         .lines()
         .zip(outputs.lines())
