@@ -1,8 +1,6 @@
-use onig::{Regex, RegexOptions, Syntax};
+use onig::{Error, Regex, RegexOptions, Syntax};
 
-use crate::SegmenterResult;
-
-pub fn re(regex: &str) -> SegmenterResult<Regex> {
+pub fn re(regex: &str) -> Result<Regex, Error> {
     Ok(Regex::with_options(
         regex,
         RegexOptions::REGEX_OPTION_NONE,
@@ -10,7 +8,7 @@ pub fn re(regex: &str) -> SegmenterResult<Regex> {
     )?)
 }
 
-pub fn re_i(regex: &str) -> SegmenterResult<Regex> {
+pub fn re_i(regex: &str) -> Result<Regex, Error> {
     Ok(Regex::with_options(
         regex,
         RegexOptions::REGEX_OPTION_IGNORECASE,
