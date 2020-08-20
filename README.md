@@ -1,4 +1,4 @@
-Pragmatic Segmenter
+rust-pragmatic-segmenter
 ========
 Rust port of pySBD v3.1.0.
 
@@ -19,3 +19,14 @@ cargo build
       작성한다.
 - [ ] Boxed error 대신 제대로 된 에러 타입 만들기
 - [ ] pySBD와 루비 구현체의 테스트케이스들 가져오기
+
+&nbsp;
+
+--------
+*rust-pragmatic-segmenter* is primarily distributed under the terms of both the
+[Apache License (Version 2.0)] and the [MIT license]. See [COPYRIGHT] for
+details.
+
+[MIT license]: LICENSE-MIT
+[Apache License (Version 2.0)]: LICENSE-APACHE
+[COPYRIGHT]: COPYRIGHT
