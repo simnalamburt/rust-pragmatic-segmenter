@@ -2,8 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
 
-use onig::{Captures, Regex as OnigRegex};
-use regex::Regex;
+use onig::{Captures, Regex};
 
 use crate::rule::Rule;
 use crate::util::{re, re_i};
@@ -12,23 +11,23 @@ pub struct ListItemReplacer {
     roman_numerals: HashMap<&'static str, isize>,
     latin_numerals: HashMap<&'static str, isize>,
 
-    alphabetical_list_with_periods: OnigRegex,
-    alphabetical_list_with_parens: OnigRegex,
+    alphabetical_list_with_periods: Regex,
+    alphabetical_list_with_parens: Regex,
 
-    alphabetical_list_letters_and_periods_regex: OnigRegex,
-    extract_alphabetical_list_letters_regex: OnigRegex,
+    alphabetical_list_letters_and_periods_regex: Regex,
+    extract_alphabetical_list_letters_regex: Regex,
 
-    numbered_list_regex_1: OnigRegex,
-    numbered_list_regex_2: OnigRegex,
-    numbered_list_parens_regex: OnigRegex,
+    numbered_list_regex_1: Regex,
+    numbered_list_regex_2: Regex,
+    numbered_list_parens_regex: Regex,
 
-    find_numbered_list_1: Regex,
-    find_numbered_list_2: Regex,
+    find_numbered_list_1: regex::Regex,
+    find_numbered_list_2: regex::Regex,
 
     space_between_list_items_first_rule: Rule,
     space_between_list_items_second_rule: Rule,
 
-    find_numbered_list_parens: Regex,
+    find_numbered_list_parens: regex::Regex,
 
     space_between_list_items_third_rule: Rule,
 }
@@ -93,10 +92,10 @@ impl ListItemReplacer {
             numbered_list_parens_regex: re(r"\d{1,2}(?=\)\s)")?,
 
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L143
-            find_numbered_list_1: Regex::new(r"♨.+\n.+♨|♨.+\r.+♨")?,
+            find_numbered_list_1: regex::Regex::new(r"♨.+\n.+♨|♨.+\r.+♨")?,
 
             // Reference: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L144
-            find_numbered_list_2: Regex::new(r"for\s\d{1,2}♨\s[a-z]")?,
+            find_numbered_list_2: regex::Regex::new(r"for\s\d{1,2}♨\s[a-z]")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
             //
@@ -113,7 +112,7 @@ impl ListItemReplacer {
             space_between_list_items_second_rule: Rule::new(r"(?<=\S\S)\s(?=\d{1,2}♨)", "\r")?,
 
             // Refernce: https://github.com/nipunsadvilkar/pySBD/blob/90699972/pysbd/lists_item_replacer.py#L154
-            find_numbered_list_parens: Regex::new(r"☝.+\n.+☝|☝.+\r.+☝")?,
+            find_numbered_list_parens: regex::Regex::new(r"☝.+\n.+☝|☝.+\r.+☝")?,
 
             // NOTE: pySBD와 pragmatic-segmenter(루비 구현체)가 다른 regex를 씀, pySBD를 따라감
             //
@@ -272,8 +271,8 @@ impl ListItemReplacer {
     fn scan_lists<'a>(
         &self,
         text: &'a str,
-        regex1: &OnigRegex,
-        regex2: &OnigRegex,
+        regex1: &Regex,
+        regex2: &Regex,
         replacement: char,
         strip: bool,
     ) -> Cow<'a, str> {
