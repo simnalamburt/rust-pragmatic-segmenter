@@ -3,12 +3,11 @@ use std::collections::{BTreeSet, HashSet};
 use std::iter::Iterator;
 
 use aho_corasick::{AhoCorasick, AhoCorasickBuilder, FindIter, MatchKind};
-use onig::{Captures, Regex};
+use onig::{Captures, Error, Regex};
 use unic_ucd_case::is_cased;
 
 use crate::rule::Rule;
 use crate::util::{re, re_i};
-use crate::SegmenterResult;
 
 pub struct AbbreviationReplacer {
     possessive_abbreviation_rule: Rule,
@@ -57,7 +56,7 @@ const PREPOSITIVE_ABBREVIATIONS: &[&str] = &[
 const NUMBER_ABBREVIATIONS: &[&str] = &["art", "ext", "no", "nos", "p", "pp"];
 
 impl AbbreviationReplacer {
-    pub fn new() -> SegmenterResult<Self> {
+    pub fn new() -> Result<Self, Error> {
         Ok(AbbreviationReplacer {
             // Example: https://rubular.com/r/yqa4Rit8EY
             possessive_abbreviation_rule: Rule::new(r"\.(?='s\s)|\.(?='s$)|\.(?='s\Z)", "∯")?,
@@ -93,7 +92,7 @@ impl AbbreviationReplacer {
 
             abbreviations: ABBREVIATIONS
                 .iter()
-                .map(|&abbr| -> SegmenterResult<_> {
+                .map(|&abbr| -> Result<_, Error> {
                     // NOTE: 여기에서도 escaped이 된 abbr을 써야하지만, pySBD와 동작을 유지하기위해
                     // 의도적으로 abbr를 바로 사용한다
                     //
@@ -372,9 +371,8 @@ fn test_python_isupper() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::error::Error;
 
-    type TestResult = Result<(), Box<dyn Error>>;
+    type TestResult = Result<(), Error>;
 
     #[test]
     fn regex_should_be_compiled() {
