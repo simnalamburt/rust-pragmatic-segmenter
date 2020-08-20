@@ -1,12 +1,12 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::error::Error;
 
 use onig::{Captures, Regex as OnigRegex};
 use regex::Regex;
 
 use crate::rule::Rule;
 use crate::util::{re, re_i};
-use crate::SegmenterResult;
 
 pub struct ListItemReplacer {
     roman_numerals: HashMap<&'static str, isize>,
@@ -43,7 +43,7 @@ const LATIN_NUMERALS: &[&str] = &[
 ];
 
 impl ListItemReplacer {
-    pub fn new() -> SegmenterResult<Self> {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
         #[must_use]
         fn map_from_list(list: &[&'static str]) -> HashMap<&'static str, isize> {
             list.iter()

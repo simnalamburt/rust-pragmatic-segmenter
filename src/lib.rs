@@ -32,8 +32,6 @@ use list_item_replacer::ListItemReplacer;
 use rule::Rule;
 use util::re;
 
-type SegmenterResult<T> = Result<T, Box<dyn Error>>;
-
 const PUNCTUATIONS: [char; 7] = ['。', '．', '.', '！', '!', '?', '？'];
 
 /// Segmenter type. It stores the compilation results of regular expressions used internally by
@@ -98,7 +96,7 @@ impl Segmenter {
     /// let segmenter = Segmenter::new()?;
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn new() -> SegmenterResult<Self> {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
         Ok(Segmenter {
             list_item_replacer: ListItemReplacer::new()?,
             abbreviation_replacer: AbbreviationReplacer::new()?,
