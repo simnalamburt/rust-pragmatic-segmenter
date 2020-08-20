@@ -1,3 +1,21 @@
+//! Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter]. **[Documentations]**
+//!
+//! rust-pragmatic-segmenter is rule-based SBD. It uses a lot of regular expressions to separate
+//! sentences.
+//!
+//! ```rust
+//! use pragmatic_segmenter::Segmenter;
+//!
+//! let segmenter = Segmenter::new()?;
+//! let result: Vec<_> = segmenter.segment("Hi Mr. Kim. Let's meet at 3 P.M.").collect();
+//! println!("{:?}", result); // ["Hi Mr. Kim. ", "Let\'s meet at 3 P.M."]
+//! # Ok::<(), Box<dyn std::error::Error>>(())
+//! ```
+//!
+//! [pySBD]: https://github.com/nipunsadvilkar/pySBD
+//! [pragmatic_segmenter]: https://github.com/diasks2/pragmatic_segmenter
+//! [Documentations]: https://docs.rs/pragmatic-segmenter
+
 mod abbreviation_replacer;
 mod list_item_replacer;
 mod rule;
@@ -18,6 +36,17 @@ type SegmenterResult<T> = Result<T, Box<dyn Error>>;
 
 const PUNCTUATIONS: [char; 7] = ['。', '．', '.', '！', '!', '?', '？'];
 
+/// Segmenter type. It stores the compilation results of regular expressions used internally by
+/// pragmatic-segmenter in memory.
+///
+/// ```rust
+/// use pragmatic_segmenter::Segmenter;
+///
+/// let segmenter = Segmenter::new()?;
+/// let result: Vec<_> = segmenter.segment("Hi Mr. Kim. Let's meet at 3 P.M.").collect();
+/// assert_eq!(result, vec!["Hi Mr. Kim. ", "Let's meet at 3 P.M."]);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 pub struct Segmenter {
     list_item_replacer: ListItemReplacer,
     abbreviation_replacer: AbbreviationReplacer,
@@ -60,6 +89,15 @@ pub struct Segmenter {
 }
 
 impl Segmenter {
+    /// Create a new Segmenter instance. The regular expressions used internally by
+    /// pragmatic-segmenter are compiled here.
+    ///
+    /// ```rust
+    /// use pragmatic_segmenter::Segmenter;
+    ///
+    /// let segmenter = Segmenter::new()?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn new() -> SegmenterResult<Self> {
         Ok(Segmenter {
             list_item_replacer: ListItemReplacer::new()?,
@@ -218,6 +256,21 @@ impl Segmenter {
         })
     }
 
+    /// Separate sentences from given input. Although it is a function that returns an Iterator,
+    /// not all processing is done by streaming. After pre-processing the entire input once,
+    /// processing is performed for each sentence by streaming.
+    ///
+    /// ```rust
+    /// use pragmatic_segmenter::Segmenter;
+    ///
+    /// let segmenter = Segmenter::new()?;
+    /// let mut iter = segmenter.segment("Hi Mr. Kim. Let's meet at 3 P.M.");
+    ///
+    /// assert_eq!(iter.next(), Some("Hi Mr. Kim. "));
+    /// assert_eq!(iter.next(), Some("Let's meet at 3 P.M."));
+    /// assert_eq!(iter.next(), None);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     pub fn segment<'a>(&'a self, original_input: &'a str) -> impl Iterator<Item = &'a str> {
         // NOTE: 루비 버전에는 이런 처리가 없으나, pySBD 3.1.0에 이 처리가 들어갔다. pySBD와 동작을
         // 맞추기위해 동일하게 처리해준다.

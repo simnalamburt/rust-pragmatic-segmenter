@@ -2,6 +2,17 @@ rust-pragmatic-segmenter [![version]][crates.io]
 ========
 Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter]. **[Documentations]**
 
+rust-pragmatic-segmenter is rule-based SBD. It uses a lot of regular
+expressions to separate sentences.
+
+```rust
+use pragmatic_segmenter::Segmenter;
+
+let segmenter = Segmenter::new()?;
+let result: Vec<_> = segmenter.segment("Hi Mr. Kim. Let's meet at 3 P.M.").collect();
+//=> vec!["Hi Mr. Kim. ", "Let's meet at 3 P.M."]
+```
+
 ### How to build
 ```bash
 sudo apt install -y libclang-dev
@@ -30,10 +41,10 @@ details.
 
 [version]: https://badgen.net/crates/v/pragmatic-segmenter
 [crates.io]: https://crates.io/crates/pragmatic-segmenter
-[Documentations]: https://docs.rs/pragmatic-segmenter
 
 [pySBD]: https://github.com/nipunsadvilkar/pySBD
 [pragmatic_segmenter]: https://github.com/diasks2/pragmatic_segmenter
+[Documentations]: https://docs.rs/pragmatic-segmenter
 
 [MIT license]: LICENSE-MIT
 [Apache License (Version 2.0)]: LICENSE-APACHE
