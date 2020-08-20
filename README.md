@@ -1,6 +1,6 @@
 rust-pragmatic-segmenter
 ========
-Rust port of [pySBD] v3.1.0.
+Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter].
 
 ### How to build
 ```bash
@@ -12,16 +12,14 @@ cargo run --release --example benchmark
 ```
 
 ### TODOs
-- [ ] Intel Hyperscan 도입한 뒤 성능 개선 벤치마크하기
-- [ ] list_item_replacer에 pySBD의 구현 실수나, pySBD가 루비 버전 pragmatic
-      segmenter와 다르게 구현한 부분이 다수 발견됨. pySBD와 동작을 맞춘 뒤,
-      diverge 할 때 고치기
-- [ ] 불필요하게 정규표현식이 많이 사용된다. 정규표현식과 문자열 복사가 필요
-      없는 버전으로 바꿀 수 있으나, 그러려면 알고리즘에 많이 손대야한다. 일단은
-      pySBD와 동작을 동일하게 유지하기 위해, 정규표현식을 사용하는 버전으로
-      작성한다.
-- [ ] Boxed error 대신 제대로 된 에러 타입 만들기
-- [ ] pySBD와 루비 구현체의 테스트케이스들 가져오기
+- [ ] Perfectly match the behavior with pySBD (current: 99%)
+- [ ] Support languages other than English
+- [ ] Remove regexes with look around and back references
+- [ ] Try Intel Hyperscan
+- [ ] Fix mistakes of pySBD, possibly send patches to the upstream
+- [ ] Optimize copies and allocations
+- [ ] Use proper error types instead of Boxed error
+- [ ] Import test cases from pySBD and ruby pragmatic_segmenter
 
 &nbsp;
 
@@ -31,6 +29,7 @@ cargo run --release --example benchmark
 details.
 
 [pySBD]: https://github.com/nipunsadvilkar/pySBD
+[pragmatic_segmenter]: https://github.com/diasks2/pragmatic_segmenter
 
 [MIT license]: LICENSE-MIT
 [Apache License (Version 2.0)]: LICENSE-APACHE
