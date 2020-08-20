@@ -264,8 +264,7 @@ impl Segmenter {
             .replace_all(&text, |c: &Captures| {
                 let mat = c.at(0).unwrap(); // Must exists
                 let mat = self.parens_between_double_quotes_0.replace_all(mat);
-                let mat = self.parens_between_double_quotes_1.replace_all(&mat);
-                mat
+                self.parens_between_double_quotes_1.replace_all(&mat)
             });
 
         let mut prior_start_char_idx = 0;

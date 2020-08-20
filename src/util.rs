@@ -2,7 +2,6 @@ use onig::{Regex, RegexOptions, Syntax};
 
 use crate::SegmenterResult;
 
-#[must_use]
 pub fn re(regex: &str) -> SegmenterResult<Regex> {
     Ok(Regex::with_options(
         regex,
@@ -11,7 +10,6 @@ pub fn re(regex: &str) -> SegmenterResult<Regex> {
     )?)
 }
 
-#[must_use]
 pub fn re_i(regex: &str) -> SegmenterResult<Regex> {
     Ok(Regex::with_options(
         regex,

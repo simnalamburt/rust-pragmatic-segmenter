@@ -4,7 +4,6 @@ use onig::{Regex, RegexOptions, Syntax};
 pub struct Rule(Regex, &'static str);
 
 impl Rule {
-    #[must_use]
     pub fn new(regex: &str, replace: &'static str) -> SegmenterResult<Self> {
         Ok(Rule(
             Regex::with_options(regex, RegexOptions::REGEX_OPTION_NONE, Syntax::ruby())?,

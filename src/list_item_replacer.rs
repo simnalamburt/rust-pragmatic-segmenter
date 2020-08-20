@@ -43,7 +43,6 @@ const LATIN_NUMERALS: &[&str] = &[
 ];
 
 impl ListItemReplacer {
-    #[must_use]
     pub fn new() -> SegmenterResult<Self> {
         #[must_use]
         fn map_from_list(list: &[&'static str]) -> HashMap<&'static str, isize> {
@@ -157,9 +156,7 @@ impl ListItemReplacer {
             false,
         );
         let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
-        let text = text.replace("☝", ""); // ListMarkerRule
-
-        text
+        text.replace("☝", "") // ListMarkerRule
     }
 
     #[must_use]
@@ -193,12 +190,10 @@ impl ListItemReplacer {
                     } else {
                         mat.to_string()
                     }
+                } else if mat == what_to_replace {
+                    format!("\r{}", mat)
                 } else {
-                    if mat == what_to_replace {
-                        format!("\r{}", mat)
-                    } else {
-                        mat.to_string()
-                    }
+                    mat.to_string()
                 }
             })
     }

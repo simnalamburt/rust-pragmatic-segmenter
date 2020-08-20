@@ -111,8 +111,8 @@ impl AbbreviationReplacer {
                 })
                 .collect::<Result<_, _>>()?,
 
-            prepositive_abbreviations: PREPOSITIVE_ABBREVIATIONS.iter().map(|s| *s).collect(),
-            number_abbreviations: NUMBER_ABBREVIATIONS.iter().map(|s| *s).collect(),
+            prepositive_abbreviations: PREPOSITIVE_ABBREVIATIONS.iter().copied().collect(),
+            number_abbreviations: NUMBER_ABBREVIATIONS.iter().copied().collect(),
 
             // Example: https://rubular.com/r/xDkpFZ0EgH
             multi_period_abbreviation_regex: re_i(r"\b[a-z](?:\.[a-z])+[.]")?,
@@ -154,11 +154,8 @@ impl AbbreviationReplacer {
         }
 
         // replace_abbreviation_as_sentence_boundary()
-        let text = self
-            .replace_abbreviation_as_sentence_boundary
-            .replace_all(&text);
-
-        text
+        self.replace_abbreviation_as_sentence_boundary
+            .replace_all(&text)
     }
 
     fn search_for_abbreviations_in_string<'a>(&self, text: &'a str) -> Cow<'a, str> {
