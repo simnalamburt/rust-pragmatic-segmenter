@@ -1,6 +1,6 @@
-rust-pragmatic-segmenter
+rust-pragmatic-segmenter [![version]][crates.io]
 ========
-Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter].
+Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter]. **[Documentations]**
 
 ### How to build
 ```bash
@@ -27,6 +27,10 @@ cargo run --release --example benchmark
 *rust-pragmatic-segmenter* is primarily distributed under the terms of both the
 [Apache License (Version 2.0)] and the [MIT license]. See [COPYRIGHT] for
 details.
+
+[version]: https://badgen.net/crates/v/pragmatic-segmenter
+[crates.io]: https://crates.io/crates/pragmatic-segmenter
+[Documentations]: https://docs.rs/pragmatic-segmenter
 
 [pySBD]: https://github.com/nipunsadvilkar/pySBD
 [pragmatic_segmenter]: https://github.com/diasks2/pragmatic_segmenter
