@@ -2,6 +2,16 @@
 name = "pragmatic-segmenter"
 version = "0.1.0"
 authors = ["Hyeon Kim <simnalamburt@gmail.com>"]
+license = "Apache-2.0 OR MIT"
+readme = "README.md"
+keywords = ["NLP", "SBD", "text", "sentence", "boundary", "segmentation"]
+repository = "https://github.com/simnalamburt/rust-pragmatic-segmenter"
+homepage = "https://github.com/simnalamburt/rust-pragmatic-segmenter"
+documentation = "https://docs.rs/pragmatic-segmenter"
+description = """
+Rust port of pySBD v3.1.0.
+"""
+categories = ["text-processing"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
