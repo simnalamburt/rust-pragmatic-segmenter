@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 
-use indicatif::{ProgressBar, ProgressStyle};
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use serde_json::from_str;
 use xz2::read::XzDecoder;
@@ -25,6 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         })
         .collect::<io::Result<_>>()?;
     let count = dataset.len();
+
     let bar = ProgressBar::new(count as u64);
     bar.set_draw_delta(10);
     bar.set_style(ProgressStyle::default_bar().template(
@@ -36,14 +37,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let good = dataset
         .par_iter()
+        .progress_with(bar)
         .map(|(input, expected)| {
-            bar.inc(1);
             let actual: Vec<_> = segmenter.segment(&input).collect();
             actual == *expected
         })
         .filter(|&b| b)
         .count();
-    bar.finish();
 
     assert_eq!(
         count,
