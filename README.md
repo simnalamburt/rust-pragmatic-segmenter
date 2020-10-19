@@ -17,9 +17,6 @@ let result: Vec<_> = segmenter.segment("Hi Mr. Kim. Let's meet at 3 P.M.").colle
 ```bash
 sudo apt install -y libclang-dev
 cargo build
-
-# Run benchmark
-cargo run --release --example benchmark
 ```
 
 ### TODOs
