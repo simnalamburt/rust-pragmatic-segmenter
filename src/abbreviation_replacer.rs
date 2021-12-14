@@ -124,7 +124,7 @@ impl AbbreviationReplacer {
     }
 
     pub fn replace(&self, text: &str) -> String {
-        let text = self.possessive_abbreviation_rule.replace_all(&text);
+        let text = self.possessive_abbreviation_rule.replace_all(text);
         let mut text = self.kommanditgesellschaft_rule.replace_all(&text);
         for rule in &self.single_letter_abbreviation_rules {
             text = rule.replace_all(&text);

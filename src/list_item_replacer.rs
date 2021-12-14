@@ -124,7 +124,7 @@ impl ListItemReplacer {
     }
 
     #[must_use]
-    pub fn add_line_break<'a>(&self, text: &'a str) -> String {
+    pub fn add_line_break(&self, text: &str) -> String {
         let text = Cow::Borrowed(text);
 
         // format_alphabetical_lists()
