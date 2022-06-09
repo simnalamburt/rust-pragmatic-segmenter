@@ -103,7 +103,7 @@ impl AbbreviationReplacer {
 
                     // NOTE: abbr에 . 이외의 글자가 들어가게될 경우, 아래의 escape 로직도 함께
                     // 고쳐야한다.
-                    let escaped = abbr.replace(r".", r"\.");
+                    let escaped = abbr.replace('.', r"\.");
                     let next_word_start = re(&format!(r"(?<={{{}}} ).{{1}}", escaped))?;
 
                     Ok((abbr, abbr_match, next_word_start))

@@ -144,7 +144,7 @@ impl ListItemReplacer {
             true,
         );
         let text = self.add_line_breaks_for_numbered_list_with_periods(&text);
-        let text = text.replace("♨", "∯"); // SubstituteListPeriodRule
+        let text = text.replace('♨', "∯"); // SubstituteListPeriodRule
 
         // format_numbered_list_with_parens()
         let text = self.scan_lists(
@@ -155,7 +155,7 @@ impl ListItemReplacer {
             false,
         );
         let text = self.add_line_breaks_for_numbered_list_with_parens(&text);
-        text.replace("☝", "") // ListMarkerRule
+        text.replace('☝', "") // ListMarkerRule
     }
 
     #[must_use]

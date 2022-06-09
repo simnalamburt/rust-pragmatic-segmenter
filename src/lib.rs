@@ -404,23 +404,23 @@ impl Segmenter {
             .flat_map(move |mut sent| {
                 // SubSymbolsRules
                 sent = sent
-                    .replace(r"∯", ".")
-                    .replace(r"♬", "،")
-                    .replace(r"♭", ":")
+                    .replace('∯', ".")
+                    .replace('♬', "،")
+                    .replace('♭', ":")
                     .replace(r"&ᓰ&", "。")
                     .replace(r"&ᓱ&", "．")
                     .replace(r"&ᓳ&", "！")
                     .replace(r"&ᓴ&", "!")
                     .replace(r"&ᓷ&", "?")
                     .replace(r"&ᓸ&", "？")
-                    .replace(r"☉", "?!")
-                    .replace(r"☇", "??")
-                    .replace(r"☈", "!?")
-                    .replace(r"☄", "!!")
+                    .replace('☉', "?!")
+                    .replace('☇', "??")
+                    .replace('☈', "!?")
+                    .replace('☄', "!!")
                     .replace(r"&✂&", "(")
                     .replace(r"&⌬&", ")")
-                    .replace(r"ȸ", "")
-                    .replace(r"ȹ", "\n");
+                    .replace('ȸ', "")
+                    .replace('ȹ', "\n");
 
                 // post_process_segments()
                 //
@@ -437,7 +437,7 @@ impl Segmenter {
                     .replace(r"♟♟♟♟♟♟♟", " . . . ")
                     .replace(r"♝♝♝♝♝♝♝", ". . . .")
                     .replace(r"☏☏", "..")
-                    .replace(r"∮", ".");
+                    .replace('∮', ".");
 
                 if self
                     .quotation_at_end_of_sentence_regex
@@ -449,7 +449,7 @@ impl Segmenter {
                         .map(|s| s.to_string())
                         .collect()
                 } else {
-                    vec![sent.replace("\n", "").trim().to_string()]
+                    vec![sent.replace('\n', "").trim().to_string()]
                 }
             })
             .map(|sent| sent.replace(r"&⎋&", "'"))
@@ -496,7 +496,7 @@ impl Segmenter {
             mat = mat.replace('?', "&ᓷ&");
             mat = mat.replace('？', "&ᓸ&");
             if !is_match_type_single {
-                mat = mat.replace("'", "&⎋&");
+                mat = mat.replace('\'', "&⎋&");
             }
             for rule in &self.sub_escaped_regex_reserved_characters {
                 mat = rule.replace_all(&mat);
