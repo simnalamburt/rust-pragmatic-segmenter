@@ -21,9 +21,3 @@ onig = "6"
 regex = "1"
 aho-corasick = "0.7"
 unic-ucd-case = "0.9.0"
-
-[dev-dependencies]
-xz2 = "0.1.6"
-serde_json = "1.0"
-rayon = "1.1"
-indicatif = {version = "0.15", features = ["rayon"]}
