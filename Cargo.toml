@@ -19,5 +19,5 @@ edition = "2018"
 [dependencies]
 onig = "6"
 regex = "1"
-aho-corasick = "0.7"
+aho-corasick = "1"
 unic-ucd-case = "0.9.0"

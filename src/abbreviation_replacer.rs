@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::{BTreeSet, HashSet};
 use std::iter::Iterator;
 
-use aho_corasick::{AhoCorasick, AhoCorasickBuilder, FindIter, MatchKind};
+use aho_corasick::{AhoCorasick, AhoCorasickBuilder, AhoCorasickKind, FindIter, MatchKind};
 use onig::{Captures, Error, Regex};
 use unic_ucd_case::is_cased;
 
@@ -261,8 +261,9 @@ impl PythonSplitLines {
         Self(
             AhoCorasickBuilder::new()
                 .match_kind(MatchKind::LeftmostFirst)
-                .dfa(true)
-                .build(newlines),
+                .kind(Some(AhoCorasickKind::DFA))
+                .build(newlines)
+                .unwrap(), // NOTE: It does not fails with our small input
         )
     }
 
@@ -278,7 +279,7 @@ impl PythonSplitLines {
 struct PythonSplitLinesKeepEnds<'ac, 'input> {
     input: &'input str,
     last_index: usize,
-    searcher: FindIter<'ac, 'input, usize>,
+    searcher: FindIter<'ac, 'input>,
 }
 
 impl<'ac, 'input> Iterator for PythonSplitLinesKeepEnds<'ac, 'input> {
