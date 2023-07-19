@@ -1,3 +1,7 @@
+> *Unmaintained, see https://github.com/simnalamburt/rust-pragmatic-segmenter/issues/8#issuecomment-1641767315*
+
+&nbsp;
+
 rust-pragmatic-segmenter [![version]][crates.io]
 ========
 Rust port of [pySBD] v0.3.1 and Ruby [pragmatic_segmenter]. **[Documentations]**
