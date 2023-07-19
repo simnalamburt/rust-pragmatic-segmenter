@@ -1,6 +1,6 @@
 rust-pragmatic-segmenter [![version]][crates.io]
 ========
-Rust port of [pySBD] v3.1.0 and Ruby [pragmatic_segmenter]. **[Documentations]**
+Rust port of [pySBD] v0.3.1 and Ruby [pragmatic_segmenter]. **[Documentations]**
 
 rust-pragmatic-segmenter is rule-based SBD. It uses a lot of regular
 expressions to separate sentences.
