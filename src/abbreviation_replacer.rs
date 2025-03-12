@@ -282,7 +282,7 @@ struct PythonSplitLinesKeepEnds<'ac, 'input> {
     searcher: FindIter<'ac, 'input>,
 }
 
-impl<'ac, 'input> Iterator for PythonSplitLinesKeepEnds<'ac, 'input> {
+impl<'input> Iterator for PythonSplitLinesKeepEnds<'_, 'input> {
     type Item = &'input str;
 
     fn next(&mut self) -> Option<Self::Item> {
